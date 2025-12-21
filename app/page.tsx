@@ -11,15 +11,17 @@ const regions = [
   { value: "asia", label: "Asia" },
   { value: "africa", label: "Africa" },
   { value: "americas", label: "Americas" },
+  // { value: "north america", label: "North America" },
+  // { value: "south america", label: "South America" },
   { value: "oceania", label: "Oceania" },
-  { value: "arctic", label: "Arctic" }
+  // { value: "arctic", label: "Arctic" }
 ];
 
 export default function Home() {
   const [selectedRegion, setSelectedRegion] = useState("europe");
   const [status, setStatus] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [wantsCapital, setWantsCapital] = useState(false);
+  const [wantsCapital, setWantsCapital] = useState(true);
   const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -32,7 +34,15 @@ export default function Home() {
 
       if (data && data.city) {
         const city = encodeURIComponent(data.city.toLowerCase());
-        router.push(`/city/${city}`);
+        const params = new URLSearchParams();
+        if (data.state_name) {
+          params.set("state", data.state_name);
+        }
+        if (data.iso2_country_code) {
+          params.set("country", data.iso2_country_code);
+        }
+        const suffix = params.toString() ? `?${params.toString()}` : "";
+        router.push(`/city/${city}${suffix}`);
       } else {
         throw new Error("City not found.");
       }
@@ -91,23 +101,23 @@ export default function Home() {
                 <input
                   type="radio"
                   name="cityType"
-                  value="random"
-                  checked={!wantsCapital}
-                  onChange={() => setWantsCapital(false)}
-                  className="h-4 w-4 border-emerald-300 text-emerald-600 accent-emerald-600 focus:ring-emerald-400"
-                />
-                Random city
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="cityType"
                   value="capital"
                   checked={wantsCapital}
                   onChange={() => setWantsCapital(true)}
                   className="h-4 w-4 border-emerald-300 text-emerald-600 accent-emerald-600 focus:ring-emerald-400"
                 />
                 Capital city
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="cityType"
+                  value="random"
+                  checked={!wantsCapital}
+                  onChange={() => setWantsCapital(false)}
+                  className="h-4 w-4 border-emerald-300 text-emerald-600 accent-emerald-600 focus:ring-emerald-400"
+                />
+                Random city
               </label>
             </fieldset>
 

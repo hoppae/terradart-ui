@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
-import { Compass, MapPin, TentTree } from "lucide-react";
+import Link from "next/link";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { Landmark, MapPinned, TentTree, ArrowLeft } from "lucide-react";
 import { fetchCityDetail } from "@/lib/api/cities";
 import { ActivityModal } from "./ActivityModal";
 
@@ -11,14 +12,21 @@ const EMPTY_ACTIVITIES: NonNullable<CityDetail["activities"]> = [];
 
 export default function CityDetailPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const cityFromPath = params?.city ? decodeURIComponent(params.city as string) : "Unknown city";
+  const stateParam = searchParams?.get("state");
+  const countryParam = searchParams?.get("country");
 
   const [detail, setDetail] = useState<CityDetail | null>(null);
   const [status, setStatus] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [page, setPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(4);
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
+
+  const resolvedState = detail?.state ?? stateParam ?? "";
+  const resolvedCountry = detail?.country ?? countryParam ?? "";
 
   useEffect(() => {
     let active = true;
@@ -26,13 +34,17 @@ export default function CityDetailPage() {
     const loadDetail = async () => {
       try {
         setIsLoading(true);
-        const data = await fetchCityDetail(cityFromPath);
+        const data = await fetchCityDetail(cityFromPath, { state: stateParam, country: countryParam });
         if (!active) return;
         setDetail(data);
         setStatus("");
-      } catch (error) {
+      } catch (error: any) {
         console.error("City detail fetch error:", error);
         if (!active) return;
+        if (error?.message?.includes("404")) {
+          router.push("/");
+          return;
+        }
         setStatus("Unable to load city details. Please try again.");
       } finally {
         if (active) {
@@ -46,7 +58,7 @@ export default function CityDetailPage() {
     return () => {
       active = false;
     };
-  }, [cityFromPath]);
+  }, [cityFromPath, stateParam, countryParam]);
 
   const formattedCity = useMemo(() => {
     const source = detail?.city ?? cityFromPath;
@@ -94,9 +106,9 @@ export default function CityDetailPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-sky-50 px-4 py-10 font-sans text-zinc-900">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-sky-50 px-4 md:px-8 py-4 md:py-8 font-sans text-zinc-900">
         <main className="mx-auto w-full max-w-7xl space-y-6">
-          <header className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
+          <header className="flex flex-wrap items-baseline justify-between gap-2">
             <div>
               <p className="text-sm uppercase tracking-[0.2em] text-emerald-600">
                 Terradart
@@ -104,10 +116,31 @@ export default function CityDetailPage() {
               <h1 className="text-4xl font-semibold leading-tight">
                 {formattedCity}
               </h1>
-              {detail?.region && (
-                <p className="text-zinc-600">Region: {detail.region}</p>
+              {(resolvedState || resolvedCountry || detail?.country_details?.region || detail?.country_details?.name?.common) && (
+                <div className="flex flex-wrap items-center gap-2 text-[15px] text-zinc-700">
+                  {detail?.country_details?.flags?.png && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={detail.country_details.flags.png}
+                      alt={detail.country_details.flags.alt || "Country flag"}
+                      className="h-5 w-7 rounded border border-emerald-100 object-cover"
+                    />
+                  )}
+                  {[resolvedState, detail?.country_details?.name?.common].filter(Boolean).join(", ") && (
+                    <span>
+                      {[resolvedState, detail?.country_details?.name?.common].filter(Boolean).join(", ")}
+                    </span>
+                  )}
+                  {/* {detail?.country_details?.region && (
+                    <span className="text-zinc-600">Region: {detail.country_details.region}</span>
+                  )} */}
+                </div>
               )}
             </div>
+            <Link href="/" className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-700 hover:text-emerald-800">
+              <ArrowLeft className="h-4 w-4" />
+              Home
+            </Link>
           </header>
 
           {status && (
@@ -119,33 +152,40 @@ export default function CityDetailPage() {
           <section className="grid gap-4 md:grid-cols-2">
             <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
               <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-700">
-                <Compass className="h-5 w-5" />
+                <Landmark className="h-5 w-5" />
                 Overview
               </div>
-              <p className="text-zinc-700">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-                dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </p>
+              {isLoading && <p className="text-sm text-zinc-600">Loading overview…</p>}
+              {!isLoading && (
+                <p className="text-zinc-700">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
+                  dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+                  proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                </p>
+              )}
             </article>
 
             <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
               <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-700">
-                <MapPin className="h-5 w-5" />
+                <MapPinned className="h-5 w-5" />
                 Location
               </div>
-              <div className="space-y-2 text-zinc-700">
-                <div className="overflow-hidden rounded-xl border border-emerald-100 shadow-sm">
-                  <iframe
-                    title={`Map of ${formattedCity}`}
-                    src={`https://www.google.com/maps?q=${coordinates?.latitude && coordinates?.longitude ? `${coordinates.latitude},${coordinates.longitude}` : encodeURIComponent(formattedCity)}&output=embed`}
-                    className="h-64 w-full border-0"
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
+              {isLoading ? (
+                <div className="h-64 w-full rounded-xl border border-emerald-100 bg-emerald-100 animate-pulse" />
+              ) : (
+                <div className="space-y-2 text-zinc-700">
+                  <div className="overflow-hidden rounded-xl border border-emerald-100 shadow-sm">
+                    <iframe
+                      title={`Map of ${formattedCity}`}
+                      src={`https://www.google.com/maps?q=${coordinates?.latitude && coordinates?.longitude ? `${coordinates.latitude},${coordinates.longitude}` : encodeURIComponent(formattedCity)}&output=embed`}
+                      className="h-64 w-full border-0"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
             </article>
 
             <article className="md:col-span-2 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
@@ -216,7 +256,6 @@ export default function CityDetailPage() {
                 </>
               )}
             </article>
-
           </section>
         </main>
       </div>

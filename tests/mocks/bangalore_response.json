@@ -1,0 +1,135 @@
+{
+    "city": "bangalore",
+    "coordinates": {
+        "latitude": 12.9767936,
+        "longitude": 77.590082
+    },
+    "state": null,
+    "country": "IN",
+    "country_details": {
+        "flags": {
+            "png": "https://flagcdn.com/w320/in.png",
+            "svg": "https://flagcdn.com/in.svg",
+            "alt": "The flag of India is composed of three equal horizontal bands of saffron, white and green. A navy blue wheel with twenty-four spokes — the Ashoka Chakra — is centered in the white band."
+        },
+        "name": {
+            "common": "India",
+            "official": "Republic of India",
+            "nativeName": {
+                "eng": {
+                    "official": "Republic of India",
+                    "common": "India"
+                },
+                "hin": {
+                    "official": "भारत गणराज्य",
+                    "common": "भारत"
+                },
+                "tam": {
+                    "official": "இந்தியக் குடியரசு",
+                    "common": "இந்தியா"
+                }
+            }
+        },
+        "region": "Asia",
+        "subregion": "Southern Asia"
+    },
+    "activities": [
+        {
+            "type": "activity",
+            "id": "139366947",
+            "self": {
+                "href": "https://test.api.amadeus.com/v1/shopping/activities/139366947",
+                "methods": [
+                    "GET"
+                ]
+            },
+            "name": "Cubbon Park Heritage Walk: A self-guided tour of Bangalore's unique history",
+            "description": "<p>Cubbon Park is a major green lung of Bangalore. This self guided audio tour will take an interesting route that will cover all the major landmarks inside and on the periphery of this gentrified park. The park Spans several hundred acres, it encompasses thousands of trees and plants of hundreds of different species. You will also uncover several hidden gems along the route. Topics include the evolution of Bangalore; The British legacy; Trees of the park; Victorian-era buildings and the five famous statues inside the park. After winding our way through the shaded lanes of Cubbon Park, we will end the tour in front of Bangalore's most majestic building, the Vidhana Soudha.</p>",
+            "geoCode": {
+                "latitude": 12.9766828,
+                "longitude": 77.5988307
+            },
+            "price": {
+                "amount": "1361.0",
+                "currencyCode": "INR"
+            },
+            "pictures": [
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzLzFmNTgwMDZmLTk4Y2QtNGZmOC04Y2MwLWZiOWMwNDk1YWE3NiIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzLzhhMmU2NjJlLTA1OWItNGJkYS1hZDY1LTIwNDBjYWJjZjgwZiIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzLzM1OWZiNmQwLWVlM2ItNDExNi1hNGNmLTM0YWZjOTMxOGI4ZiIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzL2U4NDkwNjAzLTBhNGUtNDA2ZC1hMGUyLTk1NmUwNzc1MWY1YyIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzL2VjZGY0NWZhLWFmZDUtNGYzMS1hMzExLTc4YzM3Y2E2MDc2MCIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzLzE3MzM3NGI2LThkNmEtNDdjMy1iN2UzLWMyOTc2YTcxNTY0ZCIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0="
+            ],
+            "bookingLink": "https://amadeus.booking.holibob.tech/product/85805c2c-4d7f-42d7-a455-37161f051416",
+            "minimumDuration": "43 minutes"
+        },
+        {
+            "type": "activity",
+            "id": "139443024",
+            "self": {
+                "href": "https://test.api.amadeus.com/v1/shopping/activities/139443024",
+                "methods": [
+                    "GET"
+                ]
+            },
+            "name": "Lepakshi Temple Day Tour from Bangalore",
+            "description": "<p>Embark on a captivating 2.3-hour drive from Bangalore to Lepakshi Temple, accompanied by a knowledgeable guide who will meet you at your Bangalore hotel. This scenic journey leads to the 16th-century temple complex in the Anantapur district of Andhra Pradesh. Discover the architectural splendors of Lepakshi Temple, including the renowned Veerabhadra Temple, Natya Mantapa, Kalyana Mandapa, and the fascinating Hanging Pillar—a pillar suspended in the air. Marvel at the colossal Nandi Statue, crafted from a single granite block. After immersing in the historical wonders, indulge in local cuisine at a nearby restaurant before your return drive to Bangalore. This day trip promises not only scenic beauty but also an insightful exploration of cultural and architectural treasures, guided by an experienced companion.</p>",
+            "geoCode": {
+                "latitude": 12.9715987,
+                "longitude": 77.5945627
+            },
+            "price": {
+                "amount": "8403.0",
+                "currencyCode": "INR"
+            },
+            "pictures": [
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzLzAyOTgzNDE4LTJkODctNGQ5MC1iNzgzLWRjN2EwYzQ0NDFlYiIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzLzM3MDMzZTZiLWY4YTAtNGVkZi04ODY1LTRlNzFjYzVhMzIzZSIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzLzkyNDlhZGZlLTkzNGUtNDE0MS04MTU5LTc2ZTEzN2IwMDI4YyIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzL2RmNWI1YWUwLTQ1MzMtNGE1NS1iNzhjLTRiNTc1ZGNjODk5NyIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzL2JiOWI2OWQ3LTU5MWUtNDkyZS1hMGYyLTI5Y2E2OGY4YTFhMCIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzLzdmYzA1NzAzLWQyMTItNDlmOC1hNDIzLWIzMjVhZTEwMzcyOCIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzLzFiNmRlNjA2LTFkYzAtNGUzMC04YTFmLThmYzhkMTAyNGVjOSIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzL2E1NzcxOGJjLTA3MTEtNGMyMy1hYjNmLThiZmEwZjhhODYwOSIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzLzljMTQ2YjVhLTRhZDEtNDAyYi05YWM0LTliNDhjNmIzYmQwZiIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzL2ZiMzY5MjQxLTk1YmEtNDM1OS05ZTZhLWNhMTY1ZjlmNmY4MyIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzLzc2YmVjNjhiLTM2Y2EtNDBiYi1hNTEyLTIzZGJjNjdkZjZkNSIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzL2Q3MjJjOGZjLTk0NzUtNGUwZC1hYWNhLWQwOTkzNzEwODRkYSIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0="
+            ],
+            "bookingLink": "https://amadeus.booking.holibob.tech/product/152c0a9e-6327-4250-9d5e-8c9c51a72bdf",
+            "minimumDuration": ""
+        },
+        {
+            "type": "activity",
+            "id": "139634177",
+            "self": {
+                "href": "https://test.api.amadeus.com/v1/shopping/activities/139634177",
+                "methods": [
+                    "GET"
+                ]
+            },
+            "name": "Taj Mahal and Agra Day Trip with Round-Trip Flights",
+            "description": "<p>Take a whirlwind trip up to Agra to see the Taj Mahal with this whirlwind tour to India's most celebrated monument. This tour includes round-trip airfare from a choice of Indian cities (including Mumbai, Hyderabad, Chennai, Kochi, Kolkata, and Bengaluru) to Delhi, all ground transportation, and the services of a local guide as well as admission fees to both the Taj Mahal and Agra Fort.</p>",
+            "geoCode": {
+                "latitude": 12.9715987,
+                "longitude": 77.5945627
+            },
+            "price": {
+                "amount": "50508.0",
+                "currencyCode": "INR"
+            },
+            "pictures": [
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzLzZiMmM3Yjk3LTBlODktNGE4Ny1iZTBlLTZmMGFjNTM4YjY4YyIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzLzYyYWRmNmRhLWU5ZTQtNDdjNC04YjIxLThiNDQ1YjM0MDc0OCIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzLzZkMmE3MWZlLWViMmUtNDUxMy1hOTdkLTlmNWJmMTBkODhhYiIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzLzVhZjliOTBjLWQ2YzctNGM0Mi04YWY3LTkwODIyNDI0YTNjNCIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzLzJmYjRiOWJlLTMzYzItNDg5YS1hY2NiLWYyYjAyMzQwOGM0NiIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzLzk1MWMyNDAzLTg4MDItNDY2Ni1hNDg3LWU2Y2Y4YjljNWU1OCIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0=",
+                "https://images.holibob.tech/eyJrZXkiOiJwcm9kdWN0SW1hZ2VzL2EzMTUzNzE2LWYzYzEtNGNlMi04ZDNmLWU1YzI0YjExNjgxOSIsImVkaXRzIjp7InJlc2l6ZSI6eyJmaXQiOiJjb3ZlciIsIndpZHRoIjoxOTIwLCJoZWlnaHQiOjEwODB9fX0="
+            ],
+            "bookingLink": "https://amadeus.booking.holibob.tech/product/ec91349b-935f-4c73-b562-8093b68258c5",
+            "minimumDuration": "18 hours"
+        }
+    ]
+}
