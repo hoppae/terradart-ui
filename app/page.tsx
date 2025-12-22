@@ -33,7 +33,7 @@ export default function Home() {
       const data = await fetchCityByRegion(selectedRegion, wantsCapital);
 
       if (data && data.city) {
-        const city = encodeURIComponent(data.city.toLowerCase());
+        const city = encodeURIComponent(data.city);
         const params = new URLSearchParams();
         if (data.state_name) {
           params.set("state", data.state_name);

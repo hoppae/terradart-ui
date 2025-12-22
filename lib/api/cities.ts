@@ -30,6 +30,7 @@ export type CityDetail = {
   city?: string;
   state?: string | null;
   country?: string;
+  wikipedia_extract?: string;
   country_details?: {
     flags?: {
       png?: string;

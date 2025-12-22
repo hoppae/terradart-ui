@@ -123,7 +123,7 @@ export default function CityDetailPage() {
                     <img
                       src={detail.country_details.flags.png}
                       alt={detail.country_details.flags.alt || "Country flag"}
-                      className="h-5 w-7 rounded border border-emerald-100 object-cover"
+                      className="h-5 w-7 rounded-xs"
                     />
                   )}
                   {[resolvedState, detail?.country_details?.name?.common].filter(Boolean).join(", ") && (
@@ -150,39 +150,33 @@ export default function CityDetailPage() {
           )}
 
           <section className="grid gap-4 md:grid-cols-2">
-            <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+            <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm h-[24rem]">
               <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-700">
                 <Landmark className="h-5 w-5" />
                 Overview
               </div>
-              {isLoading && <p className="text-sm text-zinc-600">Loading overview…</p>}
+              {isLoading && <p className="text-zinc-600">Loading overview…</p>}
               {!isLoading && (
-                <p className="text-zinc-700">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                  Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-                  dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                  proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                </p>
+                <div className="text-zinc-700 h-[19.5rem] overflow-y-auto pr-1">
+                  {detail?.wikipedia_extract || "No overview available for this city yet."}
+                </div>
               )}
             </article>
 
-            <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+            <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm h-[24rem]">
               <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-700">
                 <MapPinned className="h-5 w-5" />
                 Location
               </div>
               {isLoading ? (
-                <div className="h-64 w-full rounded-xl border border-emerald-100 bg-emerald-100 animate-pulse" />
+                <div className="h-[19.5rem] w-full rounded-xl border border-emerald-100 bg-emerald-100 animate-pulse" />
               ) : (
-                <div className="space-y-2 text-zinc-700">
-                  <div className="overflow-hidden rounded-xl border border-emerald-100 shadow-sm">
-                    <iframe
-                      title={`Map of ${formattedCity}`}
-                      src={`https://www.google.com/maps?q=${coordinates?.latitude && coordinates?.longitude ? `${coordinates.latitude},${coordinates.longitude}` : encodeURIComponent(formattedCity)}&output=embed`}
-                      className="h-64 w-full border-0"
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                    />
+                <div className="space-y-2 text-zinc-700 h-[19.5rem]">
+                  <div className="overflow-hidden rounded-xl border border-emerald-100 shadow-sm h-full">
+                    <iframe title={`Map of ${formattedCity}`} className="h-full w-full border-0"
+                      src={`https://www.google.com/maps/?q=${coordinates?.latitude && coordinates?.longitude ? `${coordinates.latitude},${coordinates.longitude}`
+                        : encodeURIComponent(formattedCity)}&z=11&output=embed`}
+                      loading="lazy" referrerPolicy="no-referrer-when-downgrade"/>
                   </div>
                 </div>
               )}
