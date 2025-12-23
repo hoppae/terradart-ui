@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Landmark, MapPinned, TentTree, ArrowLeft } from "lucide-react";
+import { Landmark, MapPinned, TentTree, ArrowLeft, Cloud, CloudRain, CloudSnow, Sun } from "lucide-react";
 import { fetchCityDetail } from "@/lib/api/cities";
 import { ActivityModal } from "./ActivityModal";
 
@@ -70,8 +70,6 @@ export default function CityDetailPage() {
       .join(" ") || source;
   }, [cityFromPath, detail?.city]);
 
-  const coordinates = detail?.coordinates;
-
   useEffect(() => {
     const computePerPage = () => {
       if (typeof window === "undefined") return 1;
@@ -92,6 +90,52 @@ export default function CityDetailPage() {
   const currentPage = Math.min(page, pageCount - 1);
   const start = currentPage * itemsPerPage;
   const visibleActivities = activities.slice(start, start + itemsPerPage);
+
+  const locationQuery = encodeURIComponent(
+    [formattedCity, resolvedState || resolvedCountry].filter(Boolean).join(", ") || formattedCity,
+  );
+
+  const weatherCurrent = detail?.weather?.current;
+  const weatherNext = detail?.weather?.next_day;
+  const weatherUnits = detail?.weather?.raw?.current_weather_units;
+  const tempUnit = weatherUnits?.temperature ?? "°C";
+  const windUnit = weatherUnits?.windspeed ?? "km/h";
+  const currentWeatherTime = weatherCurrent?.time
+    ? (() => {
+        const d = new Date(weatherCurrent.time);
+        const time = d.toLocaleTimeString(undefined, {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        });
+        const months = ["Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."];
+        const date = `${months[d.getMonth()]} ${d.getDate()}`;
+        return `${time}, ${date}`;
+      })()
+    : undefined;
+
+  const getWeatherIcon = (code?: number) => {
+    if (code === undefined || code === null) return <Cloud className="h-7 w-7 text-emerald-700" />;
+    if ([71, 73, 75, 77, 85, 86].includes(code)) return <CloudSnow className="h-7 w-7 text-emerald-700" />;
+    if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return <CloudRain className="h-7 w-7 text-emerald-700" />;
+    if ([0, 1].includes(code)) return <Sun className="h-7 w-7 text-emerald-700" />;
+    return <Cloud className="h-7 w-7 text-emerald-700" />;
+  };
+
+  const formatWeatherSummary = (code?: number) => {
+    if (code === undefined || code === null) return undefined;
+    if ([0].includes(code)) return "Clear";
+    if ([1, 2].includes(code)) return "Mostly clear";
+    if ([3].includes(code)) return "Cloudy";
+    if ([51, 53, 55].includes(code)) return "Drizzle";
+    if ([61, 63, 65].includes(code)) return "Rain";
+    if ([71, 73, 75].includes(code)) return "Snow";
+    if ([80, 81, 82].includes(code)) return "Showers";
+    if ([95, 96, 99].includes(code)) return "Storms";
+    return "Mixed";
+  };
+
+  const currentWeatherSummary = formatWeatherSummary(weatherCurrent?.weathercode);
 
   const truncate = (text: string, limit = 200) => text.length > limit ? `${text.slice(0, limit)}…` : text;
 
@@ -131,9 +175,6 @@ export default function CityDetailPage() {
                       {[resolvedState, detail?.country_details?.name?.common].filter(Boolean).join(", ")}
                     </span>
                   )}
-                  {/* {detail?.country_details?.region && (
-                    <span className="text-zinc-600">Region: {detail.country_details.region}</span>
-                  )} */}
                 </div>
               )}
             </div>
@@ -151,31 +192,94 @@ export default function CityDetailPage() {
 
           <section className="grid gap-4 md:grid-cols-2">
             <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm h-[24rem]">
-              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-700">
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-700">
                 <Landmark className="h-5 w-5" />
                 Overview
               </div>
               {isLoading && <p className="text-zinc-600">Loading overview…</p>}
               {!isLoading && (
                 <div className="text-zinc-700 h-[19.5rem] overflow-y-auto pr-1">
+                  <span className="font-semibold text-emerald-700 text-sm">Extract</span>&nbsp;
+                  <span>•</span>&nbsp;
                   {detail?.wikipedia_extract || "No overview available for this city yet."}
                 </div>
               )}
             </article>
 
             <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm h-[24rem]">
-              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-700">
+              <div className="mb-1 sm:mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-700">
                 <MapPinned className="h-5 w-5" />
                 Location
               </div>
+              {!isLoading && weatherCurrent && (
+                <div className="mb-2 space-y-2 text-sm text-zinc-700">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    <div className="mr-1">
+                      <div className="flex text-2xl font-semibold text-zinc-900 gap-2">
+                        <div className="mt-[3px]">{getWeatherIcon(weatherCurrent.weathercode)}</div>
+                        <div className="self-center">
+                          {weatherCurrent.temperature !== undefined ? `${weatherCurrent.temperature}${tempUnit}` : "—"}
+                        </div>
+                      </div>
+                      {currentWeatherTime && (
+                        <div className="text-xs justify-self-end">{currentWeatherTime}</div>
+                      )}
+                    </div>
+                    <div className="flex flex-col lg:gap-1 overflow-hidden">
+                      <div className="flex flex-wrap items-center gap-x-1 overflow-hidden text-ellipsis text-xs lg:text-sm">
+                        <span className="font-semibold text-emerald-700 text-sm">Today</span>
+                        {currentWeatherSummary && (
+                          <>
+                            <span>•</span>
+                            <span>{currentWeatherSummary}</span>
+                          </>
+                        )}
+                        {weatherCurrent.precipitation_probability !== undefined && (
+                          <>
+                            <span>•</span>
+                            <span>Precip: {weatherCurrent.precipitation_probability}%</span>
+                          </>
+                        )}
+                        {weatherCurrent.humidity !== undefined && (
+                          <>
+                            <span>•</span>
+                            <span>Humidity: {weatherCurrent.humidity}%</span>
+                          </>
+                        )}
+                        {weatherCurrent.windspeed !== undefined && (
+                          <>
+                            <span className="hidden sm:inline">•</span>
+                            <span className="hidden sm:inline">Wind: {weatherCurrent.windspeed} {windUnit}</span>
+                          </>
+                        )}
+                      </div>
+                      {weatherNext && (
+                        <div className="flex flex-wrap items-center gap-x-1 overflow-hidden text-ellipsis text-xs lg:text-sm">
+                          <span className="font-semibold text-emerald-700 text-sm">Tomorrow</span>
+                          {formatWeatherSummary(weatherNext.weathercode) && (
+                            <>
+                              <span>•</span>
+                              <span>{formatWeatherSummary(weatherNext.weathercode)}</span>
+                            </>
+                          )}
+                          <span>•</span>
+                          <span>
+                            {weatherNext.temperature_max !== undefined ? `${weatherNext.temperature_max}${tempUnit}` : "—"} /{" "}
+                            {weatherNext.temperature_min !== undefined ? `${weatherNext.temperature_min}${tempUnit}` : "—"}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
               {isLoading ? (
                 <div className="h-[19.5rem] w-full rounded-xl border border-emerald-100 bg-emerald-100 animate-pulse" />
               ) : (
-                <div className="space-y-2 text-zinc-700 h-[19.5rem]">
+                <div className="space-y-2 text-zinc-700 h-[16rem]">
                   <div className="overflow-hidden rounded-xl border border-emerald-100 shadow-sm h-full">
                     <iframe title={`Map of ${formattedCity}`} className="h-full w-full border-0"
-                      src={`https://www.google.com/maps/?q=${coordinates?.latitude && coordinates?.longitude ? `${coordinates.latitude},${coordinates.longitude}`
-                        : encodeURIComponent(formattedCity)}&z=11&output=embed`}
+                      src={`https://www.google.com/maps/?q=${locationQuery}&z=10&output=embed`}
                       loading="lazy" referrerPolicy="no-referrer-when-downgrade"/>
                   </div>
                 </div>
@@ -183,7 +287,7 @@ export default function CityDetailPage() {
             </article>
 
             <article className="md:col-span-2 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-700">
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-700">
                 <TentTree className="h-5 w-5" />
                 Activities
               </div>

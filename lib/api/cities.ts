@@ -31,6 +31,48 @@ export type CityDetail = {
   state?: string | null;
   country?: string;
   wikipedia_extract?: string;
+  weather?: {
+    current?: {
+      time?: string;
+      temperature?: number;
+      apparent_temperature?: number;
+      humidity?: number;
+      precipitation?: number;
+      precipitation_probability?: number;
+      windspeed?: number;
+      winddirection?: number;
+      cloudcover?: number;
+      weathercode?: number;
+    };
+    next_day?: {
+      date?: string;
+      temperature_max?: number;
+      temperature_min?: number;
+      precipitation_sum?: number;
+      precipitation_probability_max?: number;
+      weathercode?: number;
+    };
+    raw?: {
+      current_weather_units?: {
+        time?: string;
+        interval?: string;
+        temperature?: string;
+        windspeed?: string;
+        winddirection?: string;
+        is_day?: string;
+        weathercode?: string;
+      };
+      current_weather?: {
+        time?: string;
+        interval?: number;
+        temperature?: number;
+        windspeed?: number;
+        winddirection?: number;
+        is_day?: number;
+        weathercode?: number;
+      };
+    };
+  };
   country_details?: {
     flags?: {
       png?: string;
