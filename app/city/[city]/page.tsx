@@ -6,6 +6,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Landmark, MapPinned, TentTree, ArrowLeft, Cloud, CloudRain, CloudSnow, Sun } from "lucide-react";
 import { fetchCityDetail } from "@/lib/api/cities";
 import { ActivityModal } from "./ActivityModal";
+import { ActivityCard } from "../ActivityCard";
 
 type CityDetail = Awaited<ReturnType<typeof fetchCityDetail>>;
 const EMPTY_ACTIVITIES: NonNullable<CityDetail["activities"]> = [];
@@ -58,7 +59,7 @@ export default function CityDetailPage() {
     return () => {
       active = false;
     };
-  }, [cityFromPath, stateParam, countryParam]);
+  }, [cityFromPath, stateParam, countryParam, router]);
 
   const formattedCity = useMemo(() => {
     const source = detail?.city ?? cityFromPath;
@@ -136,8 +137,6 @@ export default function CityDetailPage() {
   };
 
   const currentWeatherSummary = formatWeatherSummary(weatherCurrent?.weathercode);
-
-  const truncate = (text: string, limit = 200) => text.length > limit ? `${text.slice(0, limit)}…` : text;
 
   const stripHtml = (text?: string) => text ? text.replace(/<[^>]+>/g, "").trim() : "";
 
@@ -279,7 +278,7 @@ export default function CityDetailPage() {
                 <div className="space-y-2 text-zinc-700 h-[16rem]">
                   <div className="overflow-hidden rounded-xl border border-emerald-100 shadow-sm h-full">
                     <iframe title={`Map of ${formattedCity}`} className="h-full w-full border-0"
-                      src={`https://www.google.com/maps/?q=${locationQuery}&z=10&output=embed`}
+                      src={`https://www.google.com/maps/?q=${locationQuery}&z=8&output=embed`}
                       loading="lazy" referrerPolicy="no-referrer-when-downgrade"/>
                   </div>
                 </div>
@@ -303,33 +302,17 @@ export default function CityDetailPage() {
                       const rawPreview = activity.shortDescription || activity.description || "No description provided.";
                       const activityId = activity.id ?? `${activity.name ?? "activity"}-${start + index}`;
                       const shortDescription = stripHtml(rawPreview);
-                      const displayDescription = truncate(shortDescription);
                       const hasMore = !!activity.description;
 
                       return (
-                        <div key={activityId} className="flex h-[425px] flex-col gap-3 rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 pt-4 pb-2
-                          text-zinc-800 shadow-sm">
-                          {image && (
-                            <div className="overflow-hidden rounded-lg border border-emerald-100">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img className="h-40 w-full object-cover" src={image} alt={activity.name ?? "Activity image"} loading="lazy"/>
-                            </div>
-                          )}
-                          <div className="space-y-1 flex-1">
-                            <h3 className="text-base font-semibold line-clamp-2" title={activity.name ?? "Activity"}>
-                              {activity.name ?? "Activity"}
-                            </h3>
-                            <p className="text-sm text-zinc-700">{displayDescription}</p>
-                          </div>
-                          <div className="flex justify-end">
-                            {hasMore && (
-                              <button type="button" className="text-sm font-semibold text-emerald-700 hover:text-emerald-800"
-                                onClick={() => setSelectedActivityId(activityId)}>
-                                Show more
-                              </button>
-                            )}
-                          </div>
-                        </div>
+                        <ActivityCard
+                          key={activityId}
+                          activity={activity}
+                          image={image}
+                          shortDescription={shortDescription}
+                          hasMore={hasMore}
+                          onShowMore={() => setSelectedActivityId(activityId)}
+                        />
                       );
                     })}
                   </div>
