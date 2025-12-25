@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ChevronDown, Earth, Loader2 } from "lucide-react";
 import { fetchCityByRegion } from "@/lib/api/cities";
 
@@ -15,6 +16,33 @@ const regions = [
   // { value: "south america", label: "South America" },
   { value: "oceania", label: "Oceania" },
   // { value: "arctic", label: "Arctic" }
+];
+
+const trendingCities = [
+  { name: "Tokyo", country: "JP" },
+  { name: "Paris", country: "FR" },
+  { name: "New York", country: "US" },
+  { name: "London", country: "GB" },
+  { name: "Sydney", country: "AU" },
+  { name: "Cape Town", country: "ZA" },
+  { name: "San Salvador", country: "SV" },
+  { name: "Dubai", country: "AE" },
+  { name: "Toronto", country: "CA" },
+  { name: "Mexico City", country: "MX" },
+  { name: "Mumbai", country: "IN" },
+  { name: "Berlin", country: "DE" },
+  { name: "Seoul", country: "KR" },
+  { name: "Barcelona", country: "ES" },
+  { name: "Singapore", country: "SG" },
+  { name: "Buenos Aires", country: "AR" },
+  { name: "Istanbul", country: "TR" },
+  { name: "Los Angeles", country: "US" },
+  { name: "Moscow", country: "RU" },
+  { name: "Lima", country: "PE" },
+  { name: "Cairo", country: "EG" },
+  { name: "Lisbon", country: "PT" },
+  { name: "Amsterdam", country: "NL" },
+  { name: "Bangkok", country: "TH" },
 ];
 
 export default function Home() {
@@ -58,7 +86,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-sky-50 px-4 font-sans text-zinc-900">
       <main className="w-full max-w-3xl rounded-3xl border border-white/60 bg-white/80 p-10 shadow-xl backdrop-blur">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-10">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
           <div className="space-y-2">
             <p className="text-sm uppercase tracking-[0.2em] text-emerald-600">
               Terradart
@@ -144,6 +172,19 @@ export default function Home() {
             {status}
           </div>
         )}
+
+        <div className="mt-6 space-y-2 text-sm">
+          <div className="flex flex-wrap gap-x-3">
+            <span className="font-semibold text-zinc-900">Discover a trending city:</span>
+            {trendingCities.map((city) => (
+              <Link key={city.name} className="font-semibold text-emerald-600 transition hover:text-emerald-700
+                hover:underline underline-offset-2 decoration-emerald-200 focus-visible:outline-none focus-visible:ring-2
+                focus-visible:ring-emerald-300" href={`/city/${encodeURIComponent(city.name)}?country=${city.country}`}>
+                {city.name}
+              </Link>
+            ))}
+          </div>
+        </div>
 
       </main>
     </div>
