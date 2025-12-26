@@ -22,7 +22,7 @@ const toTitleCase = (value?: string) => {
 export async function generateMetadata({ params }: MetadataProps): Promise<Metadata> {
   const { city } = await params;
 
-  let formattedCity = toTitleCase(city);
+  const formattedCity = toTitleCase(city);
 
   const title = "Discover " + formattedCity;
   const description = `Discover ${formattedCity}. Whether you're planning your next trip, or just exploring the world.`;

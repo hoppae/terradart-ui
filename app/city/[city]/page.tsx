@@ -3,10 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Landmark, MapPinned, TentTree, ArrowLeft, Cloud, CloudRain, CloudSnow, Sun } from "lucide-react";
+import { Landmark, MapPinned, TentTree, ArrowLeft, Cloud, CloudRain, CloudSnow, Sun, Loader2 } from "lucide-react";
 import { fetchCityDetail } from "@/lib/api/cities";
 import { ActivityModal } from "./ActivityModal";
 import { ActivityCard } from "../ActivityCard";
+import { ActivitiesSkeletonGrid, FlagLineSkeleton, LocationSkeleton, OverviewSkeleton } from "../Skeletons";
 
 type CityDetail = Awaited<ReturnType<typeof fetchCityDetail>>;
 const EMPTY_ACTIVITIES: NonNullable<CityDetail["activities"]> = [];
@@ -102,6 +103,7 @@ export default function CityDetailPage() {
   const weatherUnits = detail?.weather?.raw?.current_weather_units;
   const tempUnit = weatherUnits?.temperature ?? "°C";
   const windUnit = weatherUnits?.windspeed ?? "km/h";
+  const hasWeather = !!weatherCurrent;
   const currentWeatherTime = weatherCurrent?.time
     ? (() => {
         const d = new Date(weatherCurrent.time);
@@ -159,23 +161,33 @@ export default function CityDetailPage() {
               </p>
               <h1 className="text-4xl font-semibold leading-tight">
                 {formattedCity}
+                {isLoading && (
+                  <Loader2
+                    className="ml-2 inline-block h-6 w-6 translate-y-[1px] animate-spin text-emerald-700/80 align-middle"
+                    aria-label="Loading city data"
+                  />
+                )}
               </h1>
-              {(resolvedState || resolvedCountry || detail?.country_details?.region || detail?.country_details?.name?.common) && (
-                <div className="flex flex-wrap items-center gap-2 text-[15px] text-zinc-700">
-                  {detail?.country_details?.flags?.png && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={detail.country_details.flags.png}
-                      alt={detail.country_details.flags.alt || "Country flag"}
-                      className="h-5 w-7 rounded-xs"
-                    />
-                  )}
-                  {[resolvedState, detail?.country_details?.name?.common].filter(Boolean).join(", ") && (
-                    <span>
-                      {[resolvedState, detail?.country_details?.name?.common].filter(Boolean).join(", ")}
-                    </span>
-                  )}
-                </div>
+              {isLoading ? (
+                <FlagLineSkeleton />
+              ) : (
+                (resolvedState || resolvedCountry || detail?.country_details?.name?.common) && (
+                  <div className="flex flex-wrap items-center gap-2 text-[15px] text-zinc-700">
+                    {detail?.country_details?.flags?.png && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={detail.country_details.flags.png}
+                        alt={detail.country_details.flags.alt || "Country flag"}
+                        className="h-5 w-7 rounded-xs"
+                      />
+                    )}
+                    {[resolvedState, detail?.country_details?.name?.common].filter(Boolean).join(", ") && (
+                      <span>
+                        {[resolvedState, detail?.country_details?.name?.common].filter(Boolean).join(", ")}
+                      </span>
+                    )}
+                  </div>
+                )
               )}
             </div>
             <Link href="/" className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-700 hover:text-emerald-800">
@@ -196,8 +208,9 @@ export default function CityDetailPage() {
                 <Landmark className="h-5 w-5" />
                 Overview
               </div>
-              {isLoading && <p className="text-zinc-600">Loading overview…</p>}
-              {!isLoading && (
+              {isLoading ? (
+                <OverviewSkeleton />
+              ) : (
                 <div className="text-zinc-700 h-[19.5rem] overflow-y-auto pr-1">
                   <span className="font-semibold text-emerald-700 text-sm">Extract</span>&nbsp;
                   <span>•</span>&nbsp;
@@ -211,78 +224,80 @@ export default function CityDetailPage() {
                 <MapPinned className="h-5 w-5" />
                 Location
               </div>
-              {!isLoading && weatherCurrent && (
-                <div className="mb-2 space-y-2 text-sm text-zinc-700">
-                  <div className="flex items-center gap-2 overflow-hidden">
-                    <div className="mr-1">
-                      <div className="flex text-2xl font-semibold text-zinc-900 gap-2">
-                        <div className="mt-[3px]">{getWeatherIcon(weatherCurrent.weathercode)}</div>
-                        <div className="self-center">
-                          {weatherCurrent.temperature !== undefined ? `${weatherCurrent.temperature}${tempUnit}` : "—"}
-                        </div>
-                      </div>
-                      {currentWeatherTime && (
-                        <div className="text-xs justify-self-end">{currentWeatherTime}</div>
-                      )}
-                    </div>
-                    <div className="flex flex-col lg:gap-1 overflow-hidden">
-                      <div className="flex flex-wrap items-center gap-x-1 overflow-hidden text-ellipsis text-xs lg:text-sm">
-                        <span className="font-semibold text-emerald-700 text-sm">Today</span>
-                        {currentWeatherSummary && (
-                          <>
-                            <span>•</span>
-                            <span>{currentWeatherSummary}</span>
-                          </>
-                        )}
-                        {weatherCurrent.precipitation_probability !== undefined && (
-                          <>
-                            <span>•</span>
-                            <span>Precip: {weatherCurrent.precipitation_probability}%</span>
-                          </>
-                        )}
-                        {weatherCurrent.humidity !== undefined && (
-                          <>
-                            <span>•</span>
-                            <span>Humidity: {weatherCurrent.humidity}%</span>
-                          </>
-                        )}
-                        {weatherCurrent.windspeed !== undefined && (
-                          <>
-                            <span className="hidden sm:inline">•</span>
-                            <span className="hidden sm:inline">Wind: {weatherCurrent.windspeed} {windUnit}</span>
-                          </>
-                        )}
-                      </div>
-                      {weatherNext && (
-                        <div className="flex flex-wrap items-center gap-x-1 overflow-hidden text-ellipsis text-xs lg:text-sm">
-                          <span className="font-semibold text-emerald-700 text-sm">Tomorrow</span>
-                          {formatWeatherSummary(weatherNext.weathercode) && (
-                            <>
-                              <span>•</span>
-                              <span>{formatWeatherSummary(weatherNext.weathercode)}</span>
-                            </>
-                          )}
-                          <span>•</span>
-                          <span>
-                            {weatherNext.temperature_max !== undefined ? `${weatherNext.temperature_max}${tempUnit}` : "—"} /{" "}
-                            {weatherNext.temperature_min !== undefined ? `${weatherNext.temperature_min}${tempUnit}` : "—"}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
               {isLoading ? (
-                <div className="h-[19.5rem] w-full rounded-xl border border-emerald-100 bg-emerald-100 animate-pulse" />
+                <LocationSkeleton />
               ) : (
-                <div className="space-y-2 text-zinc-700 h-[16rem]">
-                  <div className="overflow-hidden rounded-xl border border-emerald-100 shadow-sm h-full">
-                    <iframe title={`Map of ${formattedCity}`} className="h-full w-full border-0"
-                      src={`https://www.google.com/maps/?q=${locationQuery}&z=8&output=embed`}
-                      loading="lazy" referrerPolicy="no-referrer-when-downgrade"/>
+                <>
+                  {hasWeather && (
+                    <div className="mb-2 space-y-2 text-sm text-zinc-700">
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        <div className="mr-1">
+                          <div className="flex text-2xl font-semibold text-zinc-900 gap-2">
+                            <div className="mt-[3px]">{getWeatherIcon(weatherCurrent.weathercode)}</div>
+                            <div className="self-center">
+                              {weatherCurrent.temperature !== undefined ? `${weatherCurrent.temperature}${tempUnit}` : "—"}
+                            </div>
+                          </div>
+                          {currentWeatherTime && (
+                            <div className="text-xs justify-self-end">{currentWeatherTime}</div>
+                          )}
+                        </div>
+                        <div className="flex flex-col lg:gap-1 overflow-hidden">
+                          <div className="flex flex-wrap items-center gap-x-1 overflow-hidden text-ellipsis text-xs lg:text-sm">
+                            <span className="font-semibold text-emerald-700 text-sm">Today</span>
+                            {currentWeatherSummary && (
+                              <>
+                                <span>•</span>
+                                <span>{currentWeatherSummary}</span>
+                              </>
+                            )}
+                            {weatherCurrent.precipitation_probability !== undefined && (
+                              <>
+                                <span>•</span>
+                                <span>Precip: {weatherCurrent.precipitation_probability}%</span>
+                              </>
+                            )}
+                            {weatherCurrent.humidity !== undefined && (
+                              <>
+                                <span>•</span>
+                                <span>Humidity: {weatherCurrent.humidity}%</span>
+                              </>
+                            )}
+                            {weatherCurrent.windspeed !== undefined && (
+                              <>
+                                <span className="hidden sm:inline">•</span>
+                                <span className="hidden sm:inline">Wind: {weatherCurrent.windspeed} {windUnit}</span>
+                              </>
+                            )}
+                          </div>
+                          {weatherNext && (
+                            <div className="flex flex-wrap items-center gap-x-1 overflow-hidden text-ellipsis text-xs lg:text-sm">
+                              <span className="font-semibold text-emerald-700 text-sm">Tomorrow</span>
+                              {formatWeatherSummary(weatherNext.weathercode) && (
+                                <>
+                                  <span>•</span>
+                                  <span>{formatWeatherSummary(weatherNext.weathercode)}</span>
+                                </>
+                              )}
+                              <span>•</span>
+                              <span>
+                                {weatherNext.temperature_max !== undefined ? `${weatherNext.temperature_max}${tempUnit}` : "—"} /{" "}
+                                {weatherNext.temperature_min !== undefined ? `${weatherNext.temperature_min}${tempUnit}` : "—"}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div className={`space-y-2 text-zinc-700 ${hasWeather ? "h-[16rem]" : "h-[19.5rem]"}`}>
+                    <div className="overflow-hidden rounded-xl border border-emerald-100 shadow-sm h-full">
+                      <iframe title={`Map of ${formattedCity}`} className="h-full w-full border-0"
+                        src={`https://www.google.com/maps/?q=${locationQuery}&z=8&output=embed`}
+                        loading="lazy" referrerPolicy="no-referrer-when-downgrade"/>
+                    </div>
                   </div>
-                </div>
+                </>
               )}
             </article>
 
@@ -291,7 +306,7 @@ export default function CityDetailPage() {
                 <TentTree className="h-5 w-5" />
                 Activities
               </div>
-              {isLoading && <p className="text-zinc-600">Loading activities...</p>}
+              {isLoading && <ActivitiesSkeletonGrid count={itemsPerPage} />}
               {!isLoading && (!detail?.activities || detail.activities.length === 0) && (
                 <p className="text-zinc-600">No activities found for this city.</p>
               )}
