@@ -12,7 +12,6 @@ const useLineCount = (ref: RefObject<HTMLElement | null>, trigger?: unknown) => 
 
     const node = ref.current;
     if (!node) {
-      setLineCount(2);
       return;
     }
 
@@ -24,24 +23,27 @@ const useLineCount = (ref: RefObject<HTMLElement | null>, trigger?: unknown) => 
       const computed = window.getComputedStyle(target);
       const lineHeight = parseFloat(computed.lineHeight);
       if (!lineHeight) {
-        setLineCount(2);
         return;
       }
       const lines = Math.max(1, Math.round(target.clientHeight / lineHeight));
       setLineCount((prev) => (prev === lines ? prev : lines));
     };
 
-    updateLineCount();
+    const scheduleUpdate = () => {
+      window.requestAnimationFrame(updateLineCount);
+    };
 
-    const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(updateLineCount) : null;
+    scheduleUpdate();
+
+    const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(scheduleUpdate) : null;
     if (observer) {
       observer.observe(node);
     }
 
-    window.addEventListener("resize", updateLineCount);
+    window.addEventListener("resize", scheduleUpdate);
     return () => {
       observer?.disconnect();
-      window.removeEventListener("resize", updateLineCount);
+      window.removeEventListener("resize", scheduleUpdate);
     };
   }, [ref, trigger]);
 

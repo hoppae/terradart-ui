@@ -39,10 +39,11 @@ export default function CityDetailPage() {
         if (!active) return;
         setDetail(data);
         setStatus("");
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
         console.error("City detail fetch error:", error);
         if (!active) return;
-        if (error?.message?.includes("404")) {
+        if (message.includes("404")) {
           router.push("/");
           return;
         }
