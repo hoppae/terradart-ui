@@ -13,8 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Find your next spot / Terradart",
-  description: "Find your next spot / Terradart",
+  title: {
+    template: "%s / Terradart",
+    default: "Find your next spot / Terradart",
+  },
+  description: "Perfect for planning your next adventure, or just exploring the world."
 };
 
 export default function RootLayout({
