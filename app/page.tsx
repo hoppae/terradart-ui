@@ -220,7 +220,7 @@ export default function Home() {
           <div className="flex flex-wrap gap-x-3 gap-y-1">
             <span className="font-semibold text-zinc-900">Discover a trending city:</span>
             {trendingCities.map((city) => (
-              <Link key={city.name} className="font-semibold text-emerald-600 transition hover:text-emerald-700
+              <Link key={city.name} prefetch={false} className="font-semibold text-emerald-600 transition hover:text-emerald-700
                 hover:underline underline-offset-2 decoration-emerald-200 focus-visible:outline-none focus-visible:ring-2
                 focus-visible:ring-emerald-300" href={`/city/${encodeURIComponent(city.name)}?country=${city.country}`}>
                 {city.name !== "New York City" ? city.name : "New York"}
