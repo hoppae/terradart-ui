@@ -109,8 +109,10 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-sky-50 px-4 font-sans text-zinc-900">
-      <main className="w-full max-w-3xl rounded-3xl border border-white/60 bg-white/80 p-10 shadow-xl backdrop-blur">
+    <div className="flex min-h-screen lg:items-center justify-center bg-gradient-to-br from-emerald-50 via-white
+      to-sky-50 px-0 lg:px-4 font-sans text-zinc-900">
+      <main className="w-full min-h-screen lg:min-h-fit lg:max-w-3xl bg-transparent
+        lg:bg-white/80 p-6 lg:p-10 lg:rounded-3xl lg:border lg:border-white/60 lg:shadow-xl lg:backdrop-blur">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div className="space-y-2">
             <p className="text-sm uppercase tracking-[0.2em] text-emerald-600">
