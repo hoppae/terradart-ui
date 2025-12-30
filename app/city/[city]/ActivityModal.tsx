@@ -40,7 +40,7 @@ export function ActivityModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-0 sm:px-4"
       onClick={onClose}>
-      <div className="flex flex-col rounded-none bg-white shadow-2xl sm:rounded-xl 
+      <div className="flex flex-col rounded-none bg-white shadow-2xl sm:rounded-xl font-sans
         h-full sm:h-[95vh] xl:h-[90vh] 2xl:h-[65vh]
         w-full sm:max-w-4xl md:w-3xl lg:w-2xl 2xl:w-3xl"
         onClick={(event) => event.stopPropagation()}>
@@ -66,7 +66,8 @@ export function ActivityModal({
               <div className="space-y-2">
                 <div className="relative overflow-hidden rounded-lg">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img className="w-full object-cover" src={images[photoIndex]} alt={activity.name ?? "Activity image"} loading="lazy"/>
+                  <img className="w-full object-cover h-60 sm:h-80 xl:h-100"
+                    src={images[photoIndex]} alt={activity.name ?? "Activity image"} loading="lazy"/>
                   {images.length > 1 && (
                     <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/40 px-3 py-1 text-xs text-white">
                       <span>

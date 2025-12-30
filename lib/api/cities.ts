@@ -104,6 +104,59 @@ export type CityDetail = {
     };
     minimumDuration?: string;
   }>;
+  places?: Array<{
+    fsq_place_id?: string;
+    name?: string;
+    latitude?: number;
+    longitude?: number;
+    link?: string;
+    description?: string;
+    popularity?: number;
+    rating?: number;
+    price?: number;
+    attributes?: Record<string, unknown>;
+    hours?: {
+      display?: string;
+      is_local_holiday?: boolean;
+      open_now?: boolean;
+      regular?: Array<{ day?: number; open?: string; close?: string }>;
+    };
+    categories?: Array<{
+      fsq_category_id?: string;
+      name?: string;
+      short_name?: string;
+      plural_name?: string;
+      icon?: { prefix?: string; suffix?: string };
+    }>;
+    location?: {
+      address?: string;
+      locality?: string;
+      region?: string;
+      admin_region?: string;
+      postcode?: string;
+      country?: string;
+      formatted_address?: string;
+    };
+    photos?: Array<{
+      fsq_photo_id?: string;
+      created_at?: string;
+      prefix?: string;
+      suffix?: string;
+      width?: number;
+      height?: number;
+      classifications?: string[];
+    }>;
+    stats?: {
+      total_photos?: number;
+      total_ratings?: number;
+      total_tips?: number;
+    };
+    tastes?: string[];
+    social_media?: Record<string, string>;
+    tel?: string;
+    website?: string;
+    email?: string;
+  }>;
 };
 
 export async function fetchCityDetail(city: string, opts?: { state?: string | null; country?: string | null }): Promise<CityDetail> {

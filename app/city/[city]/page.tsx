@@ -3,11 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Landmark, MapPinned, TentTree, ArrowLeft, Cloud, CloudRain, CloudSnow, Sun, Loader2 } from "lucide-react";
+import { Landmark, MapPinned, TentTree, ArrowLeft, Cloud, CloudRain, CloudSnow, Sun, Loader2, BottleWine } from "lucide-react";
 import { fetchCityDetail } from "@/lib/api/cities";
 import { ActivityModal } from "./ActivityModal";
+import { PlaceModal } from "./PlaceModal";
 import { ActivityCard } from "../ActivityCard";
-import { ActivitiesSkeletonGrid, FlagLineSkeleton, LocationSkeleton, OverviewSkeleton } from "../Skeletons";
+import { PlaceCard } from "../PlaceCard";
+import { ActivitiesSkeletonGrid, FlagLineSkeleton, LocationSkeleton, OverviewSkeleton, PlacesSkeletonGrid } from "../Skeletons";
 
 type CityDetail = Awaited<ReturnType<typeof fetchCityDetail>>;
 const EMPTY_ACTIVITIES: NonNullable<CityDetail["activities"]> = [];
@@ -24,8 +26,10 @@ export default function CityDetailPage() {
   const [status, setStatus] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [page, setPage] = useState(0);
+  const [placesPage, setPlacesPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(4);
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
 
   const resolvedState = detail?.state ?? stateParam ?? "";
   const resolvedCountry = detail?.country ?? countryParam ?? "";
@@ -89,10 +93,28 @@ export default function CityDetailPage() {
   }, []);
 
   const activities: NonNullable<CityDetail["activities"]> = detail?.activities ?? EMPTY_ACTIVITIES;
+  const places: NonNullable<CityDetail["places"]> = detail?.places ?? [];
   const pageCount = Math.max(1, Math.ceil(activities.length / itemsPerPage));
+  const sortedPlaces = useMemo(() => {
+    const score = (place: NonNullable<CityDetail["places"]>[number]) => {
+      const hasImages = (place.photos?.length ?? 0) > 0;
+      const hasDescription = !!place.description;
+      if (hasImages && hasDescription) return 3;
+      if (hasImages) return 2;
+      if (hasDescription) return 1;
+      return 0;
+    };
+
+    return [...places].sort((a, b) => score(b) - score(a));
+  }, [places]);
+
+  const placesPageCount = Math.max(1, Math.ceil(sortedPlaces.length / itemsPerPage));
   const currentPage = Math.min(page, pageCount - 1);
+  const currentPlacesPage = Math.min(placesPage, placesPageCount - 1);
   const start = currentPage * itemsPerPage;
+  const placesStart = currentPlacesPage * itemsPerPage;
   const visibleActivities = activities.slice(start, start + itemsPerPage);
+  const visiblePlaces = sortedPlaces.slice(placesStart, placesStart + itemsPerPage);
 
   const locationQuery = encodeURIComponent(
     [formattedCity, resolvedState || resolvedCountry].filter(Boolean).join(", ") || formattedCity,
@@ -149,6 +171,13 @@ export default function CityDetailPage() {
     }
     return activities.find((activity) => activity.id === selectedActivityId || activity.name === selectedActivityId) ?? null;
   }, [activities, selectedActivityId]);
+
+  const selectedPlace = useMemo(() => {
+    if (!selectedPlaceId) {
+      return null;
+    }
+    return places.find((place) => place.fsq_place_id === selectedPlaceId || place.name === selectedPlaceId) ?? null;
+  }, [places, selectedPlaceId]);
 
   return (
     <>
@@ -353,6 +382,51 @@ export default function CityDetailPage() {
                 </>
               )}
             </article>
+
+            <article className="md:col-span-2 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-700">
+                <BottleWine className="h-5 w-5" />
+                Places
+              </div>
+              {isLoading && <PlacesSkeletonGrid count={itemsPerPage} />}
+              {!isLoading && (!places || places.length === 0) && (
+                <p className="text-zinc-600">No places found for this city.</p>
+              )}
+              {!isLoading && places && places.length > 0 && (
+                <>
+                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {visiblePlaces.map((place, idx) => {
+                      const placeId = place.fsq_place_id ?? place.name ?? `place-${placesStart + idx}`;
+                      return (
+                        <PlaceCard
+                          key={placeId}
+                          place={place}
+                          onShowMore={() => setSelectedPlaceId(placeId)}
+                        />
+                      );
+                    })}
+                  </div>
+
+                  {placesPageCount > 1 && (
+                    <div className="mt-4 flex items-center justify-between text-sm text-zinc-700">
+                      <button type="button" className="rounded-full border border-emerald-200 px-3 py-2 font-medium text-emerald-700 transition
+                        hover:border-emerald-300 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50" disabled={currentPlacesPage === 0}
+                        onClick={() => setPlacesPage((p) => Math.max(0, p - 1))}>
+                        Back
+                      </button>
+                      <span>
+                        Page {currentPlacesPage + 1} of {placesPageCount}
+                      </span>
+                      <button type="button" className="rounded-full border border-emerald-200 px-3 py-2 font-medium text-emerald-700 transition
+                        hover:border-emerald-300 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50" disabled={currentPlacesPage >= placesPageCount - 1}
+                        onClick={() => setPlacesPage((p) => Math.min(placesPageCount - 1, p + 1))}>
+                        Next
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </article>
           </section>
         </main>
       </div>
@@ -360,6 +434,14 @@ export default function CityDetailPage() {
       {selectedActivity && (
         <ActivityModal key={selectedActivity.id ?? selectedActivity.name ?? "activity-modal"}
           activity={selectedActivity} onClose={() => setSelectedActivityId(null)}/>
+      )}
+
+      {selectedPlace && (
+        <PlaceModal
+          key={selectedPlace.fsq_place_id ?? selectedPlace.name ?? "place-modal"}
+          place={selectedPlace}
+          onClose={() => setSelectedPlaceId(null)}
+        />
       )}
 
     </>

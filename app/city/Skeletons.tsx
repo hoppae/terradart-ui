@@ -3,27 +3,28 @@ export const SkeletonBlock = ({ className }: { className?: string }) => (
 );
 
 export const ActivitySkeletonCard = () => (
-  <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
-    <SkeletonBlock className="w-full h-32 sm:h-36 rounded-xl mb-3" />
-    <div className="space-y-2">
+  <div className="flex h-[425px] flex-col gap-2 rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 pt-4 pb-2 shadow-sm">
+    <SkeletonBlock className="h-40 w-full rounded-lg border border-emerald-100" />
+    <div className="space-y-2 flex-1">
       <SkeletonBlock className="h-5 w-full" />
-      <SkeletonBlock className="h-3 w-11/12" />
-      <SkeletonBlock className="h-3 w-full" />
-      <SkeletonBlock className="h-3 w-10/12" />
-      <SkeletonBlock className="h-3 w-full" />
+      <SkeletonBlock className="h-5 w-3/4" />
       <SkeletonBlock className="h-3 w-full" />
       <SkeletonBlock className="h-3 w-11/12" />
       <SkeletonBlock className="h-3 w-10/12" />
-      <SkeletonBlock className="h-3 w-11/12" />
+      <SkeletonBlock className="h-3 w-9/12" />
+      <SkeletonBlock className="h-3 w-8/12" />
+    </div>
+    <div className="flex justify-end">
+      <SkeletonBlock className="h-4 w-20 rounded-full" />
     </div>
   </div>
 );
 
 export const OverviewSkeleton = () => {
   const lineSets = [
-    ["w-full", "w-11/12", "w-10/12", "w-11/12", "w-full"],
-    ["w-full", "w-10/12", "w-11/12", "w-full", "w-10/12"],
-    ["w-11/12", "w-full", "w-10/12", "w-11/12", "w-full"],
+    ["w-full", "w-11/12", "w-10/12", "w-9/12", "w-full"],
+    ["w-11/12", "w-10/12", "w-11/12", "w-full", "w-10/12"],
+    ["w-11/12", "w-full", "w-11/12", "w-10/12", "w-9/12"],
   ];
 
   return (
@@ -56,6 +57,32 @@ export const ActivitiesSkeletonGrid = ({ count }: { count: number }) => (
   <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
     {Array.from({ length: Math.max(1, count) }).map((_, idx) => (
       <ActivitySkeletonCard key={`activity-skeleton-${idx}`} />
+    ))}
+  </div>
+);
+
+export const PlaceSkeletonCard = () => (
+  <div className="flex h-[425px] flex-col gap-2 rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 pt-4 pb-2 shadow-sm">
+    <SkeletonBlock className="h-40 w-full rounded-lg border border-emerald-100" />
+    <div className="space-y-2 flex-1">
+      <SkeletonBlock className="h-5 w-3/4" />
+      <SkeletonBlock className="h-4 w-1/2" />
+      <SkeletonBlock className="h-3 w-full" />
+      <SkeletonBlock className="h-3 w-11/12" />
+      <SkeletonBlock className="h-3 w-10/12" />
+      <SkeletonBlock className="h-3 w-9/12" />
+      <SkeletonBlock className="h-3 w-8/12" />
+    </div>
+    <div className="flex justify-end">
+      <SkeletonBlock className="h-4 w-20 rounded-full" />
+    </div>
+  </div>
+);
+
+export const PlacesSkeletonGrid = ({ count }: { count: number }) => (
+  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    {Array.from({ length: Math.max(1, count) }).map((_, idx) => (
+      <PlaceSkeletonCard key={`place-skeleton-${idx}`} />
     ))}
   </div>
 );
