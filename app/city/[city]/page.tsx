@@ -63,6 +63,10 @@ export default function CityDetailPage() {
           setDetail((prev) => ({
             ...(prev ?? {}),
             ...base,
+            activities: prev?.activities ?? base.activities,
+            places: prev?.places ?? base.places,
+            weather: prev?.weather ?? base.weather,
+            wikipedia_extract: prev?.wikipedia_extract ?? base.wikipedia_extract,
             errors: mergeErrors(prev?.errors, base.errors),
           }));
           setHasBaseSuccess(true);
