@@ -348,6 +348,7 @@ export function loadCitySections(
       handler?.onSuccess?.(result);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
+      if (message.toLowerCase().includes("aborted")) return;
       if (cancelled) return;
       handler?.onError?.(message);
     } finally {

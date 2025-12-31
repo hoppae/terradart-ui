@@ -42,16 +42,20 @@ export default function CityDetailPage() {
   const resolvedCountry = detail?.country ?? countryParam ?? "";
 
   useEffect(() => {
+    let cancelled = false;
     const opts = { state: stateParam, country: countryParam };
 
-    setLoadingBase(true);
-    setLoadingWikipedia(true);
-    setLoadingWeather(true);
-    setLoadingActivities(true);
-    setLoadingPlaces(true);
-    setHasBaseSuccess(false);
-    setDetail(null);
-    setStatus("");
+    Promise.resolve().then(() => {
+      if (cancelled) return;
+      setLoadingBase(true);
+      setLoadingWikipedia(true);
+      setLoadingWeather(true);
+      setLoadingActivities(true);
+      setLoadingPlaces(true);
+      setHasBaseSuccess(false);
+      setDetail(null);
+      setStatus("");
+    });
 
     const cancel = loadCitySections(cityFromPath, opts, {
       base: {
@@ -139,7 +143,10 @@ export default function CityDetailPage() {
       },
     });
 
-    return cancel;
+    return () => {
+      cancelled = true;
+      cancel();
+    };
   }, [cityFromPath, stateParam, countryParam, router]);
 
   const isAnyLoading = loadingBase || loadingActivities || loadingPlaces || loadingWeather || loadingWikipedia;
@@ -173,7 +180,10 @@ export default function CityDetailPage() {
   }, []);
 
   const activities: NonNullable<CityDetail["activities"]> = detail?.activities ?? EMPTY_ACTIVITIES;
-  const places: NonNullable<CityDetail["places"]> = detail?.places ?? [];
+  const places: NonNullable<CityDetail["places"]> = useMemo(
+    () => detail?.places ?? [],
+    [detail?.places],
+  );
   const pageCount = Math.max(1, Math.ceil(activities.length / itemsPerPage));
   const sortedPlaces = useMemo(() => {
     const score = (place: NonNullable<CityDetail["places"]>[number]) => {
@@ -205,7 +215,8 @@ export default function CityDetailPage() {
   const weatherNext = detail?.weather?.next_day;
   const weatherUnits = detail?.weather?.raw?.current_weather_units;
   const tempUnit = weatherUnits?.temperature ?? "°C";
-  const windUnit = weatherUnits?.windspeed ?? "km/h";
+  const windUnitRaw = weatherUnits?.windspeed ?? "km/h";
+  const windUnit = windUnitRaw === "mp/h" ? "mph" : windUnitRaw;
   const hasWeather = !!weatherCurrent;
   const isLocationLoading = loadingBase || (hasBaseSuccess && loadingWeather && !hasWeather);
   const currentWeatherTime = weatherCurrent?.time
