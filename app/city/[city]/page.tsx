@@ -4,14 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Landmark, MapPinned, TentTree, ArrowLeft, Cloud, CloudRain, CloudSnow, Sun, Loader2, BottleWine } from "lucide-react";
-import { fetchCityDetail } from "@/lib/api/cities";
+import { CityDetail, loadCitySections } from "@/lib/api/cities";
 import { ActivityModal } from "./ActivityModal";
 import { PlaceModal } from "./PlaceModal";
 import { ActivityCard } from "../ActivityCard";
 import { PlaceCard } from "../PlaceCard";
 import { ActivitiesSkeletonGrid, FlagLineSkeleton, LocationSkeleton, OverviewSkeleton, PlacesSkeletonGrid } from "../Skeletons";
 
-type CityDetail = Awaited<ReturnType<typeof fetchCityDetail>>;
 const EMPTY_ACTIVITIES: NonNullable<CityDetail["activities"]> = [];
 
 export default function CityDetailPage() {
@@ -24,48 +23,129 @@ export default function CityDetailPage() {
 
   const [detail, setDetail] = useState<CityDetail | null>(null);
   const [status, setStatus] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [loadingBase, setLoadingBase] = useState<boolean>(true);
+  const [loadingActivities, setLoadingActivities] = useState<boolean>(true);
+  const [loadingPlaces, setLoadingPlaces] = useState<boolean>(true);
+  const [loadingWeather, setLoadingWeather] = useState<boolean>(true);
+  const [loadingWikipedia, setLoadingWikipedia] = useState<boolean>(true);
+  const [hasBaseSuccess, setHasBaseSuccess] = useState<boolean>(false);
   const [page, setPage] = useState(0);
   const [placesPage, setPlacesPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(4);
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
 
+  const mergeErrors = (existing?: CityDetail["errors"], incoming?: CityDetail["errors"]) =>
+    existing || incoming ? { ...(existing ?? {}), ...(incoming ?? {}) } : undefined;
+
   const resolvedState = detail?.state ?? stateParam ?? "";
   const resolvedCountry = detail?.country ?? countryParam ?? "";
 
   useEffect(() => {
-    let active = true;
+    const opts = { state: stateParam, country: countryParam };
 
-    const loadDetail = async () => {
-      try {
-        setIsLoading(true);
-        const data = await fetchCityDetail(cityFromPath, { state: stateParam, country: countryParam });
-        if (!active) return;
-        setDetail(data);
-        setStatus("");
-      } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : String(error);
-        console.error("City detail fetch error:", error);
-        if (!active) return;
-        if (message.includes("404")) {
-          router.push("/");
-          return;
-        }
-        setStatus("Unable to load city details. Please try again.");
-      } finally {
-        if (active) {
-          setIsLoading(false);
-        }
-      }
-    };
+    setLoadingBase(true);
+    setLoadingWikipedia(true);
+    setLoadingWeather(true);
+    setLoadingActivities(true);
+    setLoadingPlaces(true);
+    setHasBaseSuccess(false);
+    setDetail(null);
+    setStatus("");
 
-    loadDetail();
+    const cancel = loadCitySections(cityFromPath, opts, {
+      base: {
+        onSuccess: (base) => {
+          setDetail((prev) => ({
+            ...(prev ?? {}),
+            ...base,
+            errors: mergeErrors(prev?.errors, base.errors),
+          }));
+          setHasBaseSuccess(true);
+          setStatus("");
+        },
+        onError: (message) => {
+          if (message.includes("404")) {
+            router.push("/");
+            return;
+          }
+          setStatus("Unable to load city details. Please try again.");
+        },
+        onFinally: () => setLoadingBase(false),
+      },
+      wikipedia: {
+        onSuccess: (section) => {
+          setDetail((prev) => ({
+            ...(prev ?? {}),
+            wikipedia_extract: section.wikipedia_extract ?? prev?.wikipedia_extract,
+            errors: mergeErrors(prev?.errors, section.errors),
+          }));
+        },
+        onError: (message) => {
+          setDetail((prev) => ({
+            ...(prev ?? {}),
+            errors: mergeErrors(prev?.errors, { wikipedia_extract: message }),
+          }));
+        },
+        onFinally: () => setLoadingWikipedia(false),
+      },
+      weather: {
+        onSuccess: (section) => {
+          setDetail((prev) => ({
+            ...(prev ?? {}),
+            weather: section.weather ?? prev?.weather,
+            errors: mergeErrors(prev?.errors, section.errors),
+          }));
+        },
+        onError: (message) => {
+          setDetail((prev) => ({
+            ...(prev ?? {}),
+            errors: mergeErrors(prev?.errors, { weather: message }),
+          }));
+        },
+        onFinally: () => setLoadingWeather(false),
+      },
+      activities: {
+        onSuccess: (section) => {
+          setDetail((prev) => ({
+            ...(prev ?? {}),
+            activities: section.activities ?? prev?.activities,
+            errors: mergeErrors(prev?.errors, section.errors),
+          }));
+        },
+        onError: (message) => {
+          setDetail((prev) => ({
+            ...(prev ?? {}),
+            errors: mergeErrors(prev?.errors, { activities: message }),
+          }));
+        },
+        onFinally: () => setLoadingActivities(false),
+      },
+      places: {
+        onSuccess: (section) => {
+          setDetail((prev) => ({
+            ...(prev ?? {}),
+            places: section.places ?? prev?.places,
+            errors: mergeErrors(prev?.errors, section.errors),
+          }));
+        },
+        onError: (message) => {
+          setDetail((prev) => ({
+            ...(prev ?? {}),
+            errors: mergeErrors(prev?.errors, { places: message }),
+          }));
+        },
+        onFinally: () => setLoadingPlaces(false),
+      },
+    });
 
-    return () => {
-      active = false;
-    };
+    return cancel;
   }, [cityFromPath, stateParam, countryParam, router]);
+
+  const isAnyLoading = loadingBase || loadingActivities || loadingPlaces || loadingWeather || loadingWikipedia;
+  const isOverviewLoading = loadingWikipedia && !detail?.wikipedia_extract;
+  const isActivitiesLoading = loadingActivities;
+  const isPlacesLoading = loadingPlaces;
 
   const formattedCity = useMemo(() => {
     const source = detail?.city ?? cityFromPath;
@@ -120,12 +200,14 @@ export default function CityDetailPage() {
     [formattedCity, resolvedState || resolvedCountry].filter(Boolean).join(", ") || formattedCity,
   );
 
+  const hasBaseDetail = hasBaseSuccess && !!detail;
   const weatherCurrent = detail?.weather?.current;
   const weatherNext = detail?.weather?.next_day;
   const weatherUnits = detail?.weather?.raw?.current_weather_units;
   const tempUnit = weatherUnits?.temperature ?? "°C";
   const windUnit = weatherUnits?.windspeed ?? "km/h";
   const hasWeather = !!weatherCurrent;
+  const isLocationLoading = loadingBase || (hasBaseSuccess && loadingWeather && !hasWeather);
   const currentWeatherTime = weatherCurrent?.time
     ? (() => {
         const d = new Date(weatherCurrent.time);
@@ -190,14 +272,14 @@ export default function CityDetailPage() {
               </p>
               <h1 className="text-4xl font-semibold leading-tight">
                 {formattedCity}
-                {isLoading && (
+                {isAnyLoading && (
                   <Loader2
                     className="ml-2 inline-block h-6 w-6 translate-y-[1px] animate-spin text-emerald-700/80 align-middle"
                     aria-label="Loading city data"
                   />
                 )}
               </h1>
-              {isLoading ? (
+              {loadingBase && !detail?.country_details ? (
                 <FlagLineSkeleton />
               ) : (
                 (resolvedState || resolvedCountry || detail?.country_details?.name?.common) && (
@@ -237,13 +319,19 @@ export default function CityDetailPage() {
                 <Landmark className="h-5 w-5" />
                 Overview
               </div>
-              {isLoading ? (
+              {isOverviewLoading ? (
                 <OverviewSkeleton />
               ) : (
                 <div className="text-zinc-700 h-[19.5rem] overflow-y-auto pr-1">
-                  <span className="font-semibold text-emerald-700 text-sm">Extract</span>&nbsp;
-                  <span>•</span>&nbsp;
-                  {detail?.wikipedia_extract || "No overview available for this city yet."}
+                  {Boolean(detail?.errors?.wikipedia_extract) ? (
+                    <p className="text-red-600 mb-2">Unable to load overview for this city.</p>
+                  ) : (
+                    <>
+                      <span className="font-semibold text-emerald-700 text-sm">Extract</span>&nbsp;
+                      <span>•</span>&nbsp;
+                      {detail?.wikipedia_extract || "No overview available for this city yet."}
+                    </>
+                  )}
                 </div>
               )}
             </article>
@@ -253,8 +341,10 @@ export default function CityDetailPage() {
                 <MapPinned className="h-5 w-5" />
                 Location
               </div>
-              {isLoading ? (
+              {isLocationLoading ? (
                 <LocationSkeleton />
+              ) : !hasBaseDetail ? (
+                <p className="text-red-600">Unable to load location for this city.</p>
               ) : (
                 <>
                   {hasWeather && (
@@ -319,6 +409,9 @@ export default function CityDetailPage() {
                       </div>
                     </div>
                   )}
+                  {!loadingWeather && !hasWeather && Boolean(detail?.errors?.weather) && (
+                    <p className="text-red-600">Unable to load weather for this city.</p>
+                  )}
                   <div className={`space-y-2 text-zinc-700 ${hasWeather ? "h-[16rem]" : "h-[19.5rem]"}`}>
                     <div className="overflow-hidden rounded-xl border border-emerald-100 shadow-sm h-full">
                       <iframe title={`Map of ${formattedCity}`} className="h-full w-full border-0"
@@ -335,11 +428,16 @@ export default function CityDetailPage() {
                 <TentTree className="h-5 w-5" />
                 Activities
               </div>
-              {isLoading && <ActivitiesSkeletonGrid count={itemsPerPage} />}
-              {!isLoading && (!detail?.activities || detail.activities.length === 0) && (
+              {isActivitiesLoading && <ActivitiesSkeletonGrid count={itemsPerPage} />}
+              {!isActivitiesLoading && Boolean(detail?.errors?.activities) && (
+                <p className="text-red-600">Unable to load activities for this city.</p>
+              )}
+              {!isActivitiesLoading &&
+                !detail?.errors?.activities &&
+                (!detail?.activities || detail.activities.length === 0) && (
                 <p className="text-zinc-600">No activities found for this city.</p>
               )}
-              {!isLoading && detail?.activities && detail.activities.length > 0 && (
+              {!isActivitiesLoading && detail?.activities && detail.activities.length > 0 && (
                 <>
                   <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {visibleActivities.map((activity, index) => {
@@ -388,11 +486,16 @@ export default function CityDetailPage() {
                 <BottleWine className="h-5 w-5" />
                 Places
               </div>
-              {isLoading && <PlacesSkeletonGrid count={itemsPerPage} />}
-              {!isLoading && (!places || places.length === 0) && (
+              {isPlacesLoading && <PlacesSkeletonGrid count={itemsPerPage} />}
+              {!isPlacesLoading && Boolean(detail?.errors?.places) && (
+                <p className="text-red-600">Unable to load places for this city.</p>
+              )}
+              {!isPlacesLoading &&
+                !detail?.errors?.places &&
+                (!places || places.length === 0) && (
                 <p className="text-zinc-600">No places found for this city.</p>
               )}
-              {!isLoading && places && places.length > 0 && (
+              {!isPlacesLoading && places && places.length > 0 && (
                 <>
                   <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {visiblePlaces.map((place, idx) => {
