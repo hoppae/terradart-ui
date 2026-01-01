@@ -12,12 +12,12 @@ type CityResponse = {
   iso2_state_code?: string;
 };
 
-type CityInclude = "activities" | "places" | "weather" | "wikipedia";
-type CitySectionKey = "activities" | "places" | "weather" | "wikipedia_extract";
+type CityInclude = "base" | "activities" | "places" | "weather" | "wikipedia";
+type CitySectionKey = "base" | "activities" | "places" | "weather" | "wikipedia_extract";
 export type CitySectionErrors = Partial<Record<CitySectionKey, unknown>>;
-type FetchCityDetailOptions = { state?: string | null; country?: string | null; include?: CityInclude[] };
+type FetchCityDetailOptions = { state?: string | null; country?: string | null; includes?: CityInclude[] };
 type FetchCitySectionOptions = { state?: string | null; country?: string | null };
-const DEFAULT_CITY_SECTIONS: CityInclude[] = ["activities", "places", "weather", "wikipedia"];
+const DEFAULT_CITY_SECTIONS: CityInclude[] = ["base", "activities", "places", "weather", "wikipedia"];
 
 export async function fetchCityByRegion(region: string, wantsCapital: boolean): Promise<CityResponse> {
   const capitalSuffix = wantsCapital ? "?capital=true" : "";
@@ -172,11 +172,6 @@ type CityDetailPayload = {
   errors?: CitySectionErrors;
 };
 
-type CitySectionPayload<T> = {
-  data?: T;
-  errors?: CitySectionErrors;
-};
-
 const buildParams = (opts?: { state?: string | null; country?: string | null }) => {
   const params = new URLSearchParams();
   if (opts?.state) {
@@ -208,9 +203,9 @@ export async function fetchCityDetail(city: string, opts?: FetchCityDetailOption
   }
 
   const params = buildParams(opts);
-  const include = opts?.include ?? DEFAULT_CITY_SECTIONS;
-  if (include.length > 0) {
-    params.set("include", include.join(","));
+  const includes = opts?.includes ?? DEFAULT_CITY_SECTIONS;
+  if (includes.length > 0) {
+    params.set("includes", includes.join(","));
   }
 
   const query = params.toString();
@@ -227,97 +222,39 @@ export async function fetchCityDetail(city: string, opts?: FetchCityDetailOption
 }
 
 export async function fetchCityBase(city: string, opts?: FetchCitySectionOptions): Promise<CityDetail> {
-  const params = buildParams(opts);
-  const query = params.toString();
-  const url = `${BASE_URL}/get-city-base/${encodeURIComponent(city)}/${query ? `?${query}` : ""}`;
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Request failed with ${response.status}`);
-  }
-
-  const payload: CityDetailPayload = await response.json();
-  return normalizeCityDetail(payload);
+  return fetchCityDetail(city, { ...opts, includes: ["base"] });
 }
 
 export async function fetchCityWikipedia(
   city: string,
   opts?: FetchCitySectionOptions,
 ): Promise<Pick<CityDetail, "wikipedia_extract" | "errors">> {
-  const params = buildParams(opts);
-  const query = params.toString();
-  const url = `${BASE_URL}/get-city-wikipedia/${encodeURIComponent(city)}/${query ? `?${query}` : ""}`;
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Request failed with ${response.status}`);
-  }
-
-  const payload: CitySectionPayload<{ wikipedia_extract?: string }> = await response.json();
-  return {
-    wikipedia_extract: payload.data?.wikipedia_extract,
-    errors: payload.errors,
-  };
+  const detail = await fetchCityDetail(city, { ...opts, includes: ["wikipedia"] });
+  return { wikipedia_extract: detail.wikipedia_extract, errors: detail.errors };
 }
 
 export async function fetchCityWeather(
   city: string,
   opts?: FetchCitySectionOptions,
 ): Promise<Pick<CityDetail, "weather" | "errors">> {
-  const params = buildParams(opts);
-  const query = params.toString();
-  const url = `${BASE_URL}/get-city-weather/${encodeURIComponent(city)}/${query ? `?${query}` : ""}`;
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Request failed with ${response.status}`);
-  }
-
-  const payload: CitySectionPayload<{ weather?: CityDetail["weather"] }> = await response.json();
-  return {
-    weather: payload.data?.weather,
-    errors: payload.errors,
-  };
+  const detail = await fetchCityDetail(city, { ...opts, includes: ["weather"] });
+  return { weather: detail.weather, errors: detail.errors };
 }
 
 export async function fetchCityActivities(
   city: string,
   opts?: FetchCitySectionOptions,
 ): Promise<Pick<CityDetail, "activities" | "errors">> {
-  const params = buildParams(opts);
-  const query = params.toString();
-  const url = `${BASE_URL}/get-city-activities/${encodeURIComponent(city)}/${query ? `?${query}` : ""}`;
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Request failed with ${response.status}`);
-  }
-
-  const payload: CitySectionPayload<{ activities?: CityDetail["activities"] }> = await response.json();
-  return {
-    activities: payload.data?.activities,
-    errors: payload.errors,
-  };
+  const detail = await fetchCityDetail(city, { ...opts, includes: ["activities"] });
+  return { activities: detail.activities, errors: detail.errors };
 }
 
 export async function fetchCityPlaces(
   city: string,
   opts?: FetchCitySectionOptions,
 ): Promise<Pick<CityDetail, "places" | "errors">> {
-  const params = buildParams(opts);
-  const query = params.toString();
-  const url = `${BASE_URL}/get-city-places/${encodeURIComponent(city)}/${query ? `?${query}` : ""}`;
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Request failed with ${response.status}`);
-  }
-
-  const payload: CitySectionPayload<{ places?: CityDetail["places"] }> = await response.json();
-  return {
-    places: payload.data?.places,
-    errors: payload.errors,
-  };
+  const detail = await fetchCityDetail(city, { ...opts, includes: ["places"] });
+  return { places: detail.places, errors: detail.errors };
 }
 
 type SectionHandler<T> = {
