@@ -17,12 +17,7 @@ export function PlaceCard({ place, onShowMore }: PlaceCardProps) {
       {imageUrl && (
         <div className="relative rounded-lg border border-emerald-100">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={imageUrl}
-            alt={place.name || "Place photo"}
-            className="h-40 w-full object-cover"
-            loading="lazy"
-          />
+          <img src={imageUrl} alt={place.name || "Place photo"} className="h-40 w-full object-cover"/>
         </div>
       )}
 

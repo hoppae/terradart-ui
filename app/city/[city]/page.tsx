@@ -278,13 +278,21 @@ export default function CityDetailPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-sky-50 px-4 md:px-8 py-4 md:py-8 font-sans text-zinc-900">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-sky-50 px-4 md:px-8 py-3 font-sans text-zinc-900">
+        <header className="mx-auto flex w-full max-w-7xl items-center justify-between pb-1 md:pb-2">
+          <p className="uppercase tracking-[0.2em] text-emerald-600">
+            Terradart
+          </p>
+
+          <Link href="/" className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-700 hover:text-emerald-800">
+            <ArrowLeft className="h-4 w-4" />
+            Home
+          </Link>
+        </header>
+
         <main className="mx-auto w-full max-w-7xl space-y-6">
-          <header className="flex flex-wrap items-baseline justify-between gap-2">
+          <section className="flex flex-wrap items-baseline mb-5">
             <div>
-              <p className="text-sm uppercase tracking-[0.2em] text-emerald-600">
-                Terradart
-              </p>
               <h1 className="text-4xl font-semibold leading-tight">
                 {formattedCity}
                 {isAnyLoading && (
@@ -316,11 +324,7 @@ export default function CityDetailPage() {
                 )
               )}
             </div>
-            <Link href="/" className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-700 hover:text-emerald-800">
-              <ArrowLeft className="h-4 w-4" />
-              Home
-            </Link>
-          </header>
+          </section>
 
           {status && (
             <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 shadow-sm">
@@ -431,7 +435,7 @@ export default function CityDetailPage() {
                     <div className="overflow-hidden rounded-xl border border-emerald-100 shadow-sm h-full">
                       <iframe title={`Map of ${formattedCity}`} className="h-full w-full border-0"
                         src={`https://www.google.com/maps/?q=${locationQuery}&z=8&output=embed`}
-                        loading="lazy" referrerPolicy="no-referrer-when-downgrade"/>
+                        referrerPolicy="no-referrer-when-downgrade"/>
                     </div>
                   </div>
                 </>

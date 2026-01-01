@@ -66,8 +66,7 @@ export function ActivityModal({
               <div className="space-y-2">
                 <div className="relative overflow-hidden rounded-lg">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img className="w-full object-cover h-60 sm:h-80 xl:h-100"
-                    src={images[photoIndex]} alt={activity.name ?? "Activity image"} loading="lazy"/>
+                  <img className="w-full object-cover h-60 sm:h-80 xl:h-100" src={images[photoIndex]} alt={activity.name ?? "Activity image"}/>
                   {images.length > 1 && (
                     <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/40 px-3 py-1 text-xs text-white">
                       <span>

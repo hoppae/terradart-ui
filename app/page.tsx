@@ -115,7 +115,7 @@ export default function Home() {
         lg:bg-white/80 p-6 lg:p-10 lg:rounded-3xl lg:border lg:border-white/60 lg:shadow-xl lg:backdrop-blur">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div className="space-y-2">
-            <p className="text-sm uppercase tracking-[0.2em] text-emerald-600">
+            <p className="uppercase tracking-[0.2em] text-emerald-600">
               Terradart
             </p>
             <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">

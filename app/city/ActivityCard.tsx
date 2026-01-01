@@ -69,7 +69,7 @@ export function ActivityCard({ activity, image, shortDescription, hasMore, onSho
       {image && (
         <div className="rounded-lg border border-emerald-100">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="h-40 w-full object-cover" src={image} alt={activity.name ?? "Activity image"} loading="lazy"/>
+          <img className="h-40 w-full object-cover" src={image} alt={activity.name ?? "Activity image"}/>
         </div>
       )}
       <div className="space-y-1 flex-1">
