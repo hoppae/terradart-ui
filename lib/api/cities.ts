@@ -12,12 +12,13 @@ type CityResponse = {
   iso2_state_code?: string;
 };
 
-type CityInclude = "base" | "activities" | "places" | "weather" | "wikipedia";
-type CitySectionKey = "base" | "activities" | "places" | "weather" | "wikipedia_extract";
+type CitySection = "base" | "summary" | "weather" | "activities" | "places";
+type CityInclude = CitySection;
+type CitySectionKey = CitySection;
 export type CitySectionErrors = Partial<Record<CitySectionKey, unknown>>;
 type FetchCityDetailOptions = { state?: string | null; country?: string | null; includes?: CityInclude[] };
 type FetchCitySectionOptions = { state?: string | null; country?: string | null };
-const DEFAULT_CITY_SECTIONS: CityInclude[] = ["base", "activities", "places", "weather", "wikipedia"];
+const DEFAULT_CITY_SECTIONS: CityInclude[] = ["base", "summary", "weather", "activities", "places"];
 
 export async function fetchCityByRegion(region: string, wantsCapital: boolean): Promise<CityResponse> {
   const capitalSuffix = wantsCapital ? "?capital=true" : "";
@@ -37,7 +38,7 @@ export type CityDetail = {
   city?: string;
   state?: string | null;
   country?: string;
-  wikipedia_extract?: string;
+  summary?: string;
   weather?: {
     current?: {
       time?: string;
@@ -189,10 +190,10 @@ const normalizeCityDetail = (payload: CityDetailPayload): CityDetail => {
 
   return {
     ...(base as CityDetail),
+    summary: (data as Partial<CityDetail>).summary ?? (base as Partial<CityDetail>).summary,
+    weather: (data as Partial<CityDetail>).weather ?? (base as Partial<CityDetail>).weather,
     activities: (data as Partial<CityDetail>).activities ?? (base as Partial<CityDetail>).activities,
     places: (data as Partial<CityDetail>).places ?? (base as Partial<CityDetail>).places,
-    weather: (data as Partial<CityDetail>).weather ?? (base as Partial<CityDetail>).weather,
-    wikipedia_extract: (data as Partial<CityDetail>).wikipedia_extract ?? (base as Partial<CityDetail>).wikipedia_extract,
     errors: payload?.errors,
   };
 };
@@ -225,12 +226,12 @@ export async function fetchCityBase(city: string, opts?: FetchCitySectionOptions
   return fetchCityDetail(city, { ...opts, includes: ["base"] });
 }
 
-export async function fetchCityWikipedia(
+export async function fetchCitySummary(
   city: string,
   opts?: FetchCitySectionOptions,
-): Promise<Pick<CityDetail, "wikipedia_extract" | "errors">> {
-  const detail = await fetchCityDetail(city, { ...opts, includes: ["wikipedia"] });
-  return { wikipedia_extract: detail.wikipedia_extract, errors: detail.errors };
+): Promise<Pick<CityDetail, "summary" | "errors">> {
+  const detail = await fetchCityDetail(city, { ...opts, includes: ["summary"] });
+  return { summary: detail.summary, errors: detail.errors };
 }
 
 export async function fetchCityWeather(
@@ -265,7 +266,7 @@ type SectionHandler<T> = {
 
 export type LoadCityHandlers = {
   base?: SectionHandler<CityDetail>;
-  wikipedia?: SectionHandler<Pick<CityDetail, "wikipedia_extract" | "errors">>;
+  summary?: SectionHandler<Pick<CityDetail, "summary" | "errors">>;
   weather?: SectionHandler<Pick<CityDetail, "weather" | "errors">>;
   activities?: SectionHandler<Pick<CityDetail, "activities" | "errors">>;
   places?: SectionHandler<Pick<CityDetail, "places" | "errors">>;
@@ -295,7 +296,7 @@ export function loadCitySections(
   };
 
   runSection(() => fetchCityBase(city, opts), handlers.base);
-  runSection(() => fetchCityWikipedia(city, opts), handlers.wikipedia);
+  runSection(() => fetchCitySummary(city, opts), handlers.summary);
   runSection(() => fetchCityWeather(city, opts), handlers.weather);
   runSection(() => fetchCityActivities(city, opts), handlers.activities);
   runSection(() => fetchCityPlaces(city, opts), handlers.places);

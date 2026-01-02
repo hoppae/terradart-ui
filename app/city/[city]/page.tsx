@@ -27,7 +27,7 @@ export default function CityDetailPage() {
   const [loadingActivities, setLoadingActivities] = useState<boolean>(true);
   const [loadingPlaces, setLoadingPlaces] = useState<boolean>(true);
   const [loadingWeather, setLoadingWeather] = useState<boolean>(true);
-  const [loadingWikipedia, setLoadingWikipedia] = useState<boolean>(true);
+  const [loadingSummary, setLoadingSummary] = useState<boolean>(true);
   const [hasBaseSuccess, setHasBaseSuccess] = useState<boolean>(false);
   const [page, setPage] = useState(0);
   const [placesPage, setPlacesPage] = useState(0);
@@ -48,7 +48,7 @@ export default function CityDetailPage() {
     Promise.resolve().then(() => {
       if (cancelled) return;
       setLoadingBase(true);
-      setLoadingWikipedia(true);
+      setLoadingSummary(true);
       setLoadingWeather(true);
       setLoadingActivities(true);
       setLoadingPlaces(true);
@@ -63,10 +63,10 @@ export default function CityDetailPage() {
           setDetail((prev) => ({
             ...(prev ?? {}),
             ...base,
+            summary: prev?.summary ?? base.summary,
+            weather: prev?.weather ?? base.weather,
             activities: prev?.activities ?? base.activities,
             places: prev?.places ?? base.places,
-            weather: prev?.weather ?? base.weather,
-            wikipedia_extract: prev?.wikipedia_extract ?? base.wikipedia_extract,
             errors: mergeErrors(prev?.errors, base.errors),
           }));
           setHasBaseSuccess(true);
@@ -81,21 +81,21 @@ export default function CityDetailPage() {
         },
         onFinally: () => setLoadingBase(false),
       },
-      wikipedia: {
+      summary: {
         onSuccess: (section) => {
           setDetail((prev) => ({
             ...(prev ?? {}),
-            wikipedia_extract: section.wikipedia_extract ?? prev?.wikipedia_extract,
+            summary: section.summary ?? prev?.summary,
             errors: mergeErrors(prev?.errors, section.errors),
           }));
         },
         onError: (message) => {
           setDetail((prev) => ({
             ...(prev ?? {}),
-            errors: mergeErrors(prev?.errors, { wikipedia_extract: message }),
+            errors: mergeErrors(prev?.errors, { summary: message }),
           }));
         },
-        onFinally: () => setLoadingWikipedia(false),
+        onFinally: () => setLoadingSummary(false),
       },
       weather: {
         onSuccess: (section) => {
@@ -153,8 +153,8 @@ export default function CityDetailPage() {
     };
   }, [cityFromPath, stateParam, countryParam, router]);
 
-  const isAnyLoading = loadingBase || loadingActivities || loadingPlaces || loadingWeather || loadingWikipedia;
-  const isOverviewLoading = loadingWikipedia && !detail?.wikipedia_extract;
+  const isAnyLoading = loadingBase || loadingActivities || loadingPlaces || loadingWeather || loadingSummary;
+  const isOverviewLoading = loadingSummary && !detail?.summary;
   const isActivitiesLoading = loadingActivities;
   const isPlacesLoading = loadingPlaces;
 
@@ -342,14 +342,10 @@ export default function CityDetailPage() {
                 <OverviewSkeleton />
               ) : (
                 <div className="text-zinc-700 h-[19.5rem] overflow-y-auto pr-1">
-                  {Boolean(detail?.errors?.wikipedia_extract) ? (
+                  {Boolean(detail?.errors?.summary) ? (
                     <p className="text-red-600 mb-2">Unable to load overview for this city.</p>
                   ) : (
-                    <>
-                      <span className="font-semibold text-emerald-700 text-sm">Extract</span>&nbsp;
-                      <span>•</span>&nbsp;
-                      {detail?.wikipedia_extract || "No overview available for this city yet."}
-                    </>
+                    <p>{detail?.summary || "No overview available for this city yet."}</p>
                   )}
                 </div>
               )}
