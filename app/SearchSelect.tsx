@@ -30,6 +30,7 @@ export type SearchSelectProps = {
   scrollContainerClassName?: string;
   onScroll?: (event: React.UIEvent<HTMLDivElement>) => void;
   inputClassName?: string;
+  required?: boolean;
 };
 
 export default function SearchSelect({
@@ -53,6 +54,7 @@ export default function SearchSelect({
   scrollContainerClassName,
   onScroll,
   inputClassName,
+  required,
 }: SearchSelectProps) {
   const [menuMaxHeight, setMenuMaxHeight] = useState<number>();
   const [openUpwards, setOpenUpwards] = useState(false);
@@ -107,6 +109,7 @@ export default function SearchSelect({
     <div>
       <label className="text-sm font-medium text-zinc-700">
         {label}
+        {required && <span className="ml-0.5 text-red-500">*</span>}
       </label>
       <div className="relative mt-1" ref={menuRef}>
         <div className="relative">

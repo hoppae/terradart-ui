@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronDown, Earth, Loader2 } from "lucide-react";
@@ -87,6 +87,7 @@ export default function Home() {
   const [isCountryMenuOpen, setCountryMenuOpen] = useState(false);
   const [isStateMenuOpen, setStateMenuOpen] = useState(false);
   const [isCityMenuOpen, setCityMenuOpen] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
   const regionMenuRef = useRef<HTMLDivElement>(null);
   const regionButtonRef = useRef<HTMLButtonElement>(null);
   const countryMenuRef = useRef<HTMLDivElement>(null);
@@ -95,6 +96,15 @@ export default function Home() {
   const stateButtonRef = useRef<HTMLInputElement>(null);
   const cityMenuRef = useRef<HTMLDivElement>(null);
   const cityButtonRef = useRef<HTMLInputElement>(null);
+
+  const scrollFormIntoViewIfMobile = useCallback(() => {
+    if (typeof window === "undefined") return;
+    if (window.innerWidth >= 640) return; // only for xs screens
+    const form = formRef.current;
+    if (!form) return;
+    const top = form.getBoundingClientRect().top + window.scrollY - 12;
+    window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
+  }, []);
 
   const closeAllMenus = () => {
     setRegionMenuOpen(false);
@@ -268,13 +278,14 @@ export default function Home() {
           </button>
         </div>
 
-        <form className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-6 shadow-sm transition"
+        <form ref={formRef} className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-6 shadow-sm transition"
           onSubmit={handleSubmit}>
           {isLookupMode ? (
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-x-3 gap-y-4 sm:grid-cols-2">
                 <SearchSelect
                   label="Country:"
+                  required
                   inputRef={countryButtonRef}
                   menuRef={countryMenuRef}
                   value={countryDisplayValue}
@@ -282,7 +293,10 @@ export default function Home() {
                   isOpen={isCountryMenuOpen}
                   setOpen={setCountryMenuOpen}
                   onChange={setCountryQuery}
-                  onFocus={closeAllMenus}
+                  onFocus={() => {
+                    scrollFormIntoViewIfMobile();
+                    closeAllMenus();
+                  }}
                   onClear={() => { setCountryInput(""); setCountryQuery(""); }}
                   clearLabel="No country"
                   isCleared={countryInput === ""}
@@ -310,7 +324,11 @@ export default function Home() {
                   isOpen={isStateMenuOpen}
                   setOpen={setStateMenuOpen}
                   onChange={setStateQuery}
-                  onFocus={() => { if (!countryInput || isStatesLoading) return; closeAllMenus(); }}
+                  onFocus={() => {
+                    if (!countryInput || isStatesLoading) return;
+                    scrollFormIntoViewIfMobile();
+                    closeAllMenus();
+                  }}
                   onClear={() => { setStateInput(""); setStateQuery(""); }}
                   clearLabel="No state"
                   isCleared={stateInput === ""}
@@ -333,6 +351,7 @@ export default function Home() {
               <div className="grid grid-cols-1 gap-x-3 gap-y-4 sm:grid-cols-[1fr_auto] sm:items-end">
                 <SearchSelect
                   label="City:"
+                  required
                   inputRef={cityButtonRef}
                   menuRef={cityMenuRef}
                   value={cityDisplayValue}
@@ -341,7 +360,11 @@ export default function Home() {
                   isOpen={isCityMenuOpen}
                   setOpen={setCityMenuOpen}
                   onChange={setCityQuery}
-                  onFocus={() => { if (!countryInput || isCitiesLoading) return; closeAllMenus(); }}
+                  onFocus={() => {
+                    if (!countryInput || isCitiesLoading) return;
+                    scrollFormIntoViewIfMobile();
+                    closeAllMenus();
+                  }}
                   onClear={() => { setCityInput(""); setCityQuery(""); }}
                   clearLabel="No city"
                   isCleared={cityInput === ""}
