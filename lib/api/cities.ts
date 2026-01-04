@@ -34,6 +34,109 @@ export async function fetchCityByRegion(region: string, wantsCapital: boolean): 
 
 }
 
+export type CountryEntry = {
+  code: string; // iso2
+  code3?: string; // iso3
+  name: string;
+};
+
+export type StateEntry = {
+  code: string;
+  name: string;
+};
+
+export type CityOption = {
+  id: string | number;
+  name: string;
+};
+
+export async function fetchCountries(): Promise<CountryEntry[]> {
+  const url = `${BASE_URL}/countries/`;
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`Request failed with ${response.status}`);
+  }
+
+  const payload: Array<{ name?: { common?: string }; cca2?: string; cca3?: string }> = await response.json();
+
+  return (payload ?? [])
+    .filter((item) => item?.cca2)
+    .map((item) => ({
+      code: (item.cca2 ?? "").toUpperCase(),
+      code3: item.cca3 ? item.cca3.toUpperCase() : undefined,
+      name: item.name?.common ?? item.cca2 ?? "Unknown",
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export async function fetchStates(countryIso2: string): Promise<StateEntry[]> {
+  const code = countryIso2.trim().toUpperCase();
+  if (!code) return [];
+
+  const url = `${BASE_URL}/country/${encodeURIComponent(code)}/states/`;
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`Request failed with ${response.status}`);
+  }
+
+  const payload: Array<{ name?: string; iso2?: string }> = await response.json();
+
+  return (payload ?? [])
+    .filter((item) => item?.iso2)
+    .map((item) => ({
+      code: (item.iso2 ?? "").toUpperCase(),
+      name: item.name ?? item.iso2 ?? "Unknown",
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export async function fetchCitiesByCountry(countryIso2: string): Promise<CityOption[]> {
+  const code = countryIso2.trim().toUpperCase();
+  if (!code) return [];
+
+  const url = `${BASE_URL}/country/${encodeURIComponent(code)}/cities/`;
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`Request failed with ${response.status}`);
+  }
+
+  const payload: Array<{ id?: string | number; name?: string; iso2?: string }> = await response.json();
+
+  return (payload ?? [])
+    .filter((item) => item?.id && item?.name)
+    .map((item) => ({
+      id: item.id ?? "Unknown",
+      name: item.name ?? "Unknown",
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export async function fetchCitiesByState(countryIso2: string, stateIso2: string): Promise<CityOption[]> {
+  const country = countryIso2.trim().toUpperCase();
+  const state = stateIso2.trim().toUpperCase();
+  if (!country || !state) return [];
+
+  const url = `${BASE_URL}/country/${encodeURIComponent(country)}/state/${encodeURIComponent(state)}/cities/`;
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`Request failed with ${response.status}`);
+  }
+
+  const payload: Array<{ id?: string | number; name?: string; iso2?: string }> = await response.json();
+
+  return (payload ?? [])
+    .filter((item) => item?.id && item?.name)
+    .map((item) => ({
+      id: item.id ?? "Unknown",
+      name: item.name ?? "Unknown",
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
 export type CityDetail = {
   city?: string;
   state?: string | null;

@@ -1,9 +1,12 @@
 "use client";
 
+import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronDown, Earth, Loader2 } from "lucide-react";
+import SearchSelect from "./SearchSelect";
+import { useCSCLookup } from "@/lib/hooks/useCSCLookup";
 import { fetchCityByRegion } from "@/lib/api/cities";
 
 
@@ -13,9 +16,6 @@ const regions = [
   { value: "americas", label: "Americas" },
   { value: "oceania", label: "Oceania" },
   { value: "africa", label: "Africa" },
-  // { value: "north america", label: "North America" },
-  // { value: "south america", label: "South America" },
-  // { value: "arctic", label: "Arctic" }
 ];
 
 const trendingCities = [
@@ -46,39 +46,162 @@ const trendingCities = [
 ];
 
 export default function Home() {
+  const [mode, setMode] = useState<"surprise" | "lookup">("surprise");
   const [selectedRegion, setSelectedRegion] = useState("europe");
   const [status, setStatus] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [wantsCapital, setWantsCapital] = useState(true);
   const router = useRouter();
+  const {
+    countryInput,
+    setCountryInput,
+    countryQuery,
+    setCountryQuery,
+    stateInput,
+    setStateInput,
+    stateQuery,
+    setStateQuery,
+    cityInput,
+    setCityInput,
+    cityQuery,
+    setCityQuery,
+    filteredCountries,
+    filteredStates,
+    visibleCities,
+    selectedCountryLabel,
+    selectedStateLabel,
+    selectedStateName,
+    selectedCityLabel,
+    countriesStatus,
+    statesStatus,
+    citiesStatus,
+    isCountriesLoading,
+    isStatesLoading,
+    isCitiesLoading,
+    computeDisplayValue,
+    handleCityListScroll,
+  } = useCSCLookup();
   const [isRegionMenuOpen, setRegionMenuOpen] = useState(false);
+  const [isCountryMenuOpen, setCountryMenuOpen] = useState(false);
+  const [isStateMenuOpen, setStateMenuOpen] = useState(false);
+  const [isCityMenuOpen, setCityMenuOpen] = useState(false);
   const regionMenuRef = useRef<HTMLDivElement>(null);
   const regionButtonRef = useRef<HTMLButtonElement>(null);
+  const countryMenuRef = useRef<HTMLDivElement>(null);
+  const countryButtonRef = useRef<HTMLInputElement>(null);
+  const stateMenuRef = useRef<HTMLDivElement>(null);
+  const stateButtonRef = useRef<HTMLInputElement>(null);
+  const cityMenuRef = useRef<HTMLDivElement>(null);
+  const cityButtonRef = useRef<HTMLInputElement>(null);
+
+  const closeAllMenus = () => {
+    setRegionMenuOpen(false);
+    setCountryMenuOpen(false);
+    setStateMenuOpen(false);
+    setCityMenuOpen(false);
+  };
 
   useEffect(() => {
-    if (!isRegionMenuOpen) {
+    if (!isRegionMenuOpen && !isCountryMenuOpen && !isStateMenuOpen && !isCityMenuOpen) {
       return undefined;
     }
     const onPointerDown = (event: PointerEvent) => {
       const target = event.target as Node | null;
-      if (
-        regionMenuRef.current?.contains(target ?? null) ||
-        regionButtonRef.current?.contains(target ?? null)
-      ) {
+      const clickedRegion = regionMenuRef.current?.contains(target ?? null) || regionButtonRef.current?.contains(target ?? null);
+      const clickedCountry = countryMenuRef.current?.contains(target ?? null) || countryButtonRef.current?.contains(target ?? null);
+      const clickedState = stateMenuRef.current?.contains(target ?? null) || stateButtonRef.current?.contains(target ?? null);
+      const clickedCity = cityMenuRef.current?.contains(target ?? null) || cityButtonRef.current?.contains(target ?? null);
+
+      if (clickedRegion || clickedCountry || clickedState || clickedCity) {
         return;
       }
       setRegionMenuOpen(false);
+      setCountryMenuOpen(false);
+      setStateMenuOpen(false);
+      setCityMenuOpen(false);
     };
     window.addEventListener("pointerdown", onPointerDown);
     return () => {
       window.removeEventListener("pointerdown", onPointerDown);
     };
-  }, [isRegionMenuOpen]);
+  }, [isRegionMenuOpen, isCountryMenuOpen, isStateMenuOpen, isCityMenuOpen]);
+
+  useEffect(() => {
+    setStateMenuOpen(false);
+    setCityMenuOpen(false);
+  }, [countryInput]);
+
+  useEffect(() => {
+    setCityMenuOpen(false);
+  }, [stateInput]);
 
   const activeRegionLabel = regions.find((region) => region.value === selectedRegion)?.label ?? "Region";
+  const isLookupMode = mode === "lookup";
+  const countryDisplayValue = computeDisplayValue({
+    isOpen: isCountryMenuOpen,
+    query: countryQuery,
+    input: countryInput,
+    label: selectedCountryLabel,
+  });
+  const stateDisplayValue = computeDisplayValue({
+    isOpen: isStateMenuOpen,
+    query: stateQuery,
+    input: stateInput,
+    label: selectedStateLabel,
+  });
+  const cityDisplayValue = computeDisplayValue({
+    isOpen: isCityMenuOpen,
+    query: cityQuery,
+    input: cityInput,
+    label: selectedCityLabel,
+  });
+
+  const switchMode = (nextMode: "surprise" | "lookup") => {
+    setStatus("");
+    setMode(nextMode);
+    if (nextMode === "lookup") {
+      setRegionMenuOpen(false);
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setStatus("");
+
+    // Close other dropdowns before routing or fetching
+    closeAllMenus();
+
+    if (isLookupMode) {
+      const city = cityInput.trim();
+      const stateCode = stateInput.trim();
+      const stateName = stateCode ? selectedStateName || stateCode : "";
+      const country = countryInput.trim();
+
+      if (!city) {
+        setStatus("Enter a city name to continue.");
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const params = new URLSearchParams();
+        if (stateName) {
+          params.set("state", stateName);
+        }
+        if (country) {
+          params.set("country", country.toUpperCase());
+        }
+        const suffix = params.toString() ? `?${params.toString()}` : "";
+        router.push(`/city/${encodeURIComponent(city)}${suffix}`);
+      } catch (error) {
+        console.error("City lookup error:", error);
+        setStatus("Unable to look up that city right now. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+
+      return;
+    }
 
     try {
       setIsLoading(true);
@@ -122,94 +245,218 @@ export default function Home() {
               Find your next spot.
             </h1>
             <p className="max-w-2xl text-lg text-zinc-600">
-              Choose a region and Terradart will take you to a city in that area.
+              Choose a region and let us surprise you, or jump straight to the city you have in mind.
               Perfect for planning your next adventure, or just exploring the world.
             </p>
           </div>
         </div>
 
+        <div className="rounded-xl border border-zinc-200 bg-white shadow-sm w-fit mb-5">
+          <button type="button" className={`rounded-xl px-4 py-2 text-sm font-semibold transition focus-visible:outline-none
+            focus-visible:ring-2 focus-visible:ring-emerald-300 
+            ${!isLookupMode ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/30" : "text-zinc-700 hover:text-emerald-700"}`}
+            onClick={() => switchMode("surprise")}>
+            Surprise me
+          </button>
+          <button type="button" className={`rounded-xl px-4 py-2 text-sm font-semibold transition focus-visible:outline-none
+            focus-visible:ring-2 focus-visible:ring-emerald-300
+            ${isLookupMode ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/30" : "text-zinc-700 hover:text-emerald-700"}`}
+            onClick={() => switchMode("lookup")}>
+            Search a city
+          </button>
+        </div>
+
         <form className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-6 shadow-sm transition"
           onSubmit={handleSubmit}>
-          <div className="pb-5">
-          <label className="text-sm font-medium text-zinc-700">
-            Pick a region:
-          </label>
-          <div className="relative w-full mt-1">
-            <div ref={regionMenuRef} className="relative">
-              <button ref={regionButtonRef} type="button" className="flex w-full items-center justify-between rounded-xl border border-zinc-300
-                bg-white px-4 py-3 text-left text-base text-zinc-900 shadow-sm outline-none ring-emerald-200 transition hover:border-emerald-300
-                focus:border-emerald-300 focus:ring-4 focus:ring-emerald-200" aria-haspopup="listbox" aria-expanded={isRegionMenuOpen}
-                onClick={() => setRegionMenuOpen((open) => !open)}>
-                <span>{activeRegionLabel}</span>
-                <ChevronDown className="h-4 w-4 text-zinc-500" />
-              </button>
-              {isRegionMenuOpen && (
-                <div className="region-menu absolute left-0 right-0 z-10 mt-2 max-h-60 overflow-auto rounded-2xl
-                  border border-zinc-200 bg-white shadow-lg ring-1 ring-black/5">
-                  <div role="listbox" aria-label="Region options">
-                    {regions.map((region) => {
-                      const isActive = region.value === selectedRegion;
+          {isLookupMode ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <SearchSelect
+                  label="Country:"
+                  inputRef={countryButtonRef}
+                  menuRef={countryMenuRef}
+                  value={countryDisplayValue}
+                  placeholder={selectedCountryLabel}
+                  isOpen={isCountryMenuOpen}
+                  setOpen={setCountryMenuOpen}
+                  onChange={setCountryQuery}
+                  onFocus={closeAllMenus}
+                  onClear={() => { setCountryInput(""); setCountryQuery(""); }}
+                  clearLabel="No country"
+                  isCleared={countryInput === ""}
+                  options={filteredCountries.map((entry) => ({
+                    key: entry.code,
+                    label: `${(entry.code3 ?? entry.code).toUpperCase()} - ${entry.name}`,
+                    active: countryInput.toUpperCase() === entry.code.toUpperCase(),
+                    onSelect: () => {
+                      setCountryInput(entry.code.toUpperCase());
+                      setCountryQuery("");
+                    },
+                  }))}
+                  loading={isCountriesLoading}
+                  statusMessage={countriesStatus}
+                  emptyMessage="No matches"
+                />
+                <SearchSelect
+                  label="State/Region:"
+                  inputRef={stateButtonRef}
+                  menuRef={stateMenuRef}
+                  value={stateDisplayValue}
+                  placeholder={selectedStateLabel}
+                  disabled={!countryInput || isStatesLoading}
+                  isOpen={isStateMenuOpen}
+                  setOpen={setStateMenuOpen}
+                  onChange={setStateQuery}
+                  onFocus={() => { if (!countryInput || isStatesLoading) return; closeAllMenus(); }}
+                  onClear={() => { setStateInput(""); setStateQuery(""); }}
+                  clearLabel="No state"
+                  isCleared={stateInput === ""}
+                  options={filteredStates.map((entry) => ({
+                    key: entry.code,
+                    label: `${entry.code} - ${entry.name}`,
+                    active: stateInput.toUpperCase() === entry.code.toUpperCase(),
+                    onSelect: () => {
+                      setStateInput(entry.code.toUpperCase());
+                      setStateQuery("");
+                    },
+                  }))}
+                  loading={isStatesLoading}
+                  statusMessage={statesStatus}
+                  emptyMessage="No matches"
+                />
+              </div>
 
-                      return (
-                        <button key={region.value} type="button" className={`w-full px-4 py-3 text-left text-sm font-medium transition
-                          ${isActive ? "bg-emerald-50 text-emerald-700" : "text-zinc-800 hover:bg-emerald-50 hover:text-emerald-700"}`}
-                          onClick={() => { setSelectedRegion(region.value); setRegionMenuOpen(false); }}>
-                          {region.label}
-                        </button>
-                      );
-                    })}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+                <SearchSelect
+                  label="City:"
+                  inputRef={cityButtonRef}
+                  menuRef={cityMenuRef}
+                  value={cityDisplayValue}
+                  placeholder={selectedCityLabel}
+                  disabled={!countryInput || isCitiesLoading}
+                  isOpen={isCityMenuOpen}
+                  setOpen={setCityMenuOpen}
+                  onChange={setCityQuery}
+                  onFocus={() => { if (!countryInput || isCitiesLoading) return; closeAllMenus(); }}
+                  onClear={() => { setCityInput(""); setCityQuery(""); }}
+                  clearLabel="No city"
+                  isCleared={cityInput === ""}
+                  options={visibleCities.map((entry) => ({
+                    key: entry.id,
+                    label: entry.name,
+                    active: cityInput.toLowerCase() === entry.name.toLowerCase(),
+                    onSelect: () => {
+                      setCityInput(entry.name);
+                      setCityQuery("");
+                    },
+                  }))}
+                  loading={isCitiesLoading}
+                  statusMessage={citiesStatus}
+                  emptyMessage="No matches"
+                  onScroll={handleCityListScroll}
+                />
+                <div className="flex justify-start sm:justify-end">
+                  <button type="submit" className="flex self-end px-5 py-3 rounded-xl bg-emerald-600 text-base font-semibold text-white shadow-lg shadow-emerald-600/30
+                    transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-80"
+                    disabled={isLoading}>
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="animate-spin" />
+                        <span className="ml-2">Loading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Earth />
+                        <span className="ml-2">Discover</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="pb-5">
+                <label className="text-sm font-medium text-zinc-700">
+                  Pick a region:
+                </label>
+                <div className="relative w-full mt-1">
+                  <div ref={regionMenuRef} className="relative">
+                    <button ref={regionButtonRef} type="button" className="flex w-full items-center justify-between rounded-xl border border-zinc-300
+                      bg-white px-4 py-3 text-left text-base text-zinc-900 shadow-sm outline-none ring-emerald-200 transition hover:border-emerald-300
+                      focus:border-emerald-300 focus:ring-2 focus:ring-emerald-200" aria-haspopup="listbox" aria-expanded={isRegionMenuOpen}
+                      onClick={() => setRegionMenuOpen((open) => !open)}>
+                      <span>{activeRegionLabel}</span>
+                      <ChevronDown className="h-4 w-4 text-zinc-500" />
+                    </button>
+                    {isRegionMenuOpen && (
+                      <div className="region-menu absolute left-0 right-0 z-10 mt-2 max-h-60 overflow-auto rounded-2xl
+                        border border-zinc-200 bg-white shadow-lg ring-1 ring-black/5">
+                        <div role="listbox" aria-label="Region options">
+                          {regions.map((region) => {
+                            const isActive = region.value === selectedRegion;
+                            return (
+                              <button key={region.value} type="button" className={`w-full px-4 py-3 text-left text-sm font-medium transition
+                                ${isActive ? "bg-emerald-50 text-emerald-700" : "text-zinc-800 hover:bg-emerald-50 hover:text-emerald-700"}`}
+                                onClick={() => { setSelectedRegion(region.value); setRegionMenuOpen(false); }}>
+                                {region.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
-            </div>
-          </div>
-          </div>
+              </div>
 
-          <div className="flex justify-between">
-            <fieldset className="flex flex-col gap-2 text-sm">
-              <legend className="text-sm font-medium text-zinc-700 pb-2">
-                Go to a:
-              </legend>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="cityType"
-                  value="capital"
-                  checked={wantsCapital}
-                  onChange={() => setWantsCapital(true)}
-                  className="h-4 w-4 border-emerald-300 text-emerald-600 accent-emerald-600 focus:ring-emerald-400"
-                />
-                Capital city
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="cityType"
-                  value="random"
-                  checked={!wantsCapital}
-                  onChange={() => setWantsCapital(false)}
-                  className="h-4 w-4 border-emerald-300 text-emerald-600 accent-emerald-600 focus:ring-emerald-400"
-                />
-                Random city
-              </label>
-            </fieldset>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <fieldset className="flex flex-col gap-2 text-sm">
+                  <legend className="text-sm font-medium text-zinc-700 pb-2">
+                    Go to a:
+                  </legend>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="cityType"
+                      value="capital"
+                      checked={wantsCapital}
+                      onChange={() => setWantsCapital(true)}
+                      className="h-4 w-4 border-emerald-300 text-emerald-600 accent-emerald-600 focus:ring-emerald-400"
+                    />
+                    Capital city
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="cityType"
+                      value="random"
+                      checked={!wantsCapital}
+                      onChange={() => setWantsCapital(false)}
+                      className="h-4 w-4 border-emerald-300 text-emerald-600 accent-emerald-600 focus:ring-emerald-400"
+                    />
+                    Random city
+                  </label>
+                </fieldset>
 
-            <button type="submit" className="flex self-end px-5 py-3 rounded-xl bg-emerald-600 text-base font-semibold text-white shadow-lg shadow-emerald-600/30
-              transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-80"
-              disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="animate-spin" />
-                  <span className="ml-2">Loading...</span>
-                </>
-              ) : (
-                <>
-                  <Earth />
-                  <span className="ml-2">Discover</span>
-                </>
-              )}
-            </button>
-          </div>
+                <button type="submit" className="flex self-end px-5 py-3 rounded-xl bg-emerald-600 text-base font-semibold text-white shadow-lg shadow-emerald-600/30
+                  transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-80"
+                  disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="animate-spin" />
+                      <span className="ml-2">Loading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Earth />
+                      <span className="ml-2">Discover</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </>
+          )}
         </form>
 
         {status && (
