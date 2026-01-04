@@ -88,6 +88,7 @@ export default function Home() {
   const [isStateMenuOpen, setStateMenuOpen] = useState(false);
   const [isCityMenuOpen, setCityMenuOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const scrollTimeoutRef = useRef<number | null>(null);
   const regionMenuRef = useRef<HTMLDivElement>(null);
   const regionButtonRef = useRef<HTMLButtonElement>(null);
   const countryMenuRef = useRef<HTMLDivElement>(null);
@@ -97,13 +98,30 @@ export default function Home() {
   const cityMenuRef = useRef<HTMLDivElement>(null);
   const cityButtonRef = useRef<HTMLInputElement>(null);
 
-  const scrollFormIntoViewIfMobile = useCallback(() => {
+  const scrollFormIntoViewIfMobile = useCallback((target?: HTMLElement | null) => {
     if (typeof window === "undefined") return;
     if (window.innerWidth >= 640) return; // only for xs screens
-    const form = formRef.current;
-    if (!form) return;
-    const top = form.getBoundingClientRect().top + window.scrollY - 12;
-    window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
+    const element = target ?? formRef.current;
+    if (!element) return;
+    const scrollToForm = () => {
+      const top = element.getBoundingClientRect().top + window.scrollY - 12;
+      window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
+    };
+    // First attempt immediately after focus.
+    requestAnimationFrame(scrollToForm);
+    // Retry after keyboard likely reflows the viewport.
+    if (scrollTimeoutRef.current) {
+      window.clearTimeout(scrollTimeoutRef.current);
+    }
+    scrollTimeoutRef.current = window.setTimeout(scrollToForm, 250);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        window.clearTimeout(scrollTimeoutRef.current);
+      }
+    };
   }, []);
 
   const closeAllMenus = () => {
@@ -294,7 +312,7 @@ export default function Home() {
                   setOpen={setCountryMenuOpen}
                   onChange={setCountryQuery}
                   onFocus={() => {
-                    scrollFormIntoViewIfMobile();
+                    scrollFormIntoViewIfMobile(countryButtonRef.current);
                     closeAllMenus();
                   }}
                   onClear={() => { setCountryInput(""); setCountryQuery(""); }}
@@ -326,7 +344,7 @@ export default function Home() {
                   onChange={setStateQuery}
                   onFocus={() => {
                     if (!countryInput || isStatesLoading) return;
-                    scrollFormIntoViewIfMobile();
+                    scrollFormIntoViewIfMobile(stateButtonRef.current);
                     closeAllMenus();
                   }}
                   onClear={() => { setStateInput(""); setStateQuery(""); }}
@@ -362,7 +380,7 @@ export default function Home() {
                   onChange={setCityQuery}
                   onFocus={() => {
                     if (!countryInput || isCitiesLoading) return;
-                    scrollFormIntoViewIfMobile();
+                    scrollFormIntoViewIfMobile(cityButtonRef.current);
                     closeAllMenus();
                   }}
                   onClear={() => { setCityInput(""); setCityQuery(""); }}
