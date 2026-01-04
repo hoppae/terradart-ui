@@ -18,7 +18,7 @@ type DisplayValueArgs = {
 };
 
 // Country-State-City lookup state + derived values for SearchSelects.
-export function useCSCLookup(cityPageSize = 50) {
+export function useCSCLookup(pageSize = 50) {
   const [countryInput, setCountryInput] = useState("");
   const [countryQuery, setCountryQuery] = useState("");
   const [stateInput, setStateInput] = useState("");
@@ -37,7 +37,9 @@ export function useCSCLookup(cityPageSize = 50) {
   const [cities, setCities] = useState<CityOption[]>([]);
   const [citiesStatus, setCitiesStatus] = useState("");
   const [isCitiesLoading, setIsCitiesLoading] = useState(false);
-  const [cityVisibleCount, setCityVisibleCount] = useState(cityPageSize);
+  const [countryVisibleCount, setCountryVisibleCount] = useState(pageSize);
+  const [stateVisibleCount, setStateVisibleCount] = useState(pageSize);
+  const [cityVisibleCount, setCityVisibleCount] = useState(pageSize);
 
   useEffect(() => {
     let cancelled = false;
@@ -76,7 +78,8 @@ export function useCSCLookup(cityPageSize = 50) {
     setCities([]);
     setCitiesStatus("");
     setIsCitiesLoading(false);
-    setCityVisibleCount(cityPageSize);
+    setStateVisibleCount(pageSize);
+    setCityVisibleCount(pageSize);
 
     const country = countryInput.trim();
     if (!country) {
@@ -102,7 +105,7 @@ export function useCSCLookup(cityPageSize = 50) {
     return () => {
       cancelled = true;
     };
-  }, [countryInput, cityPageSize]);
+  }, [countryInput, pageSize]);
 
   useEffect(() => {
     let cancelled = false;
@@ -112,7 +115,7 @@ export function useCSCLookup(cityPageSize = 50) {
     setCities([]);
     setCitiesStatus("");
     setIsCitiesLoading(false);
-    setCityVisibleCount(cityPageSize);
+    setCityVisibleCount(pageSize);
 
     const country = countryInput.trim();
     if (!country) {
@@ -143,11 +146,19 @@ export function useCSCLookup(cityPageSize = 50) {
     return () => {
       cancelled = true;
     };
-  }, [countryInput, stateInput, cityPageSize]);
+  }, [countryInput, stateInput, pageSize]);
 
   useEffect(() => {
-    setCityVisibleCount(cityPageSize);
-  }, [cityQuery, cityPageSize]);
+    setCountryVisibleCount(pageSize);
+  }, [countryQuery, pageSize]);
+
+  useEffect(() => {
+    setStateVisibleCount(pageSize);
+  }, [stateQuery, pageSize]);
+
+  useEffect(() => {
+    setCityVisibleCount(pageSize);
+  }, [cityQuery, pageSize]);
 
   const filteredCountries = useMemo(() => {
     if (!countryQuery.trim()) return countries;
@@ -175,16 +186,41 @@ export function useCSCLookup(cityPageSize = 50) {
     return cities.filter((entry) => entry.name.toLowerCase().includes(query));
   }, [cities, cityQuery]);
 
+  const visibleCountries = useMemo(
+    () => filteredCountries.slice(0, countryVisibleCount),
+    [filteredCountries, countryVisibleCount],
+  );
+  const visibleStates = useMemo(() => filteredStates.slice(0, stateVisibleCount), [filteredStates, stateVisibleCount]);
   const visibleCities = useMemo(() => filteredCities.slice(0, cityVisibleCount), [filteredCities, cityVisibleCount]);
+
+  const handleCountryListScroll = useCallback(
+    (event: React.UIEvent<HTMLDivElement>) => {
+      const el = event.currentTarget;
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 24) {
+        setCountryVisibleCount((count) => Math.min(count + pageSize, filteredCountries.length));
+      }
+    },
+    [filteredCountries.length, pageSize],
+  );
+
+  const handleStateListScroll = useCallback(
+    (event: React.UIEvent<HTMLDivElement>) => {
+      const el = event.currentTarget;
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 24) {
+        setStateVisibleCount((count) => Math.min(count + pageSize, filteredStates.length));
+      }
+    },
+    [filteredStates.length, pageSize],
+  );
 
   const handleCityListScroll = useCallback(
     (event: React.UIEvent<HTMLDivElement>) => {
       const el = event.currentTarget;
       if (el.scrollTop + el.clientHeight >= el.scrollHeight - 24) {
-        setCityVisibleCount((count) => Math.min(count + cityPageSize, filteredCities.length));
+        setCityVisibleCount((count) => Math.min(count + pageSize, filteredCities.length));
       }
     },
-    [filteredCities.length, cityPageSize],
+    [filteredCities.length, pageSize],
   );
 
   const selectedCountry = useMemo(
@@ -230,6 +266,8 @@ export function useCSCLookup(cityPageSize = 50) {
     setCityQuery,
     filteredCountries,
     filteredStates,
+    visibleCountries,
+    visibleStates,
     visibleCities,
     selectedCountryLabel,
     selectedStateLabel,
@@ -242,6 +280,8 @@ export function useCSCLookup(cityPageSize = 50) {
     isStatesLoading,
     isCitiesLoading,
     computeDisplayValue,
+    handleCountryListScroll,
+    handleStateListScroll,
     handleCityListScroll,
   };
 }

@@ -46,7 +46,7 @@ const trendingCities = [
 ];
 
 export default function Home() {
-  const [mode, setMode] = useState<"surprise" | "lookup">("surprise");
+  const [mode, setMode] = useState<"surprise" | "lookup">("lookup");
   const [selectedRegion, setSelectedRegion] = useState("europe");
   const [status, setStatus] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -65,8 +65,8 @@ export default function Home() {
     setCityInput,
     cityQuery,
     setCityQuery,
-    filteredCountries,
-    filteredStates,
+    visibleCountries,
+    visibleStates,
     visibleCities,
     selectedCountryLabel,
     selectedStateLabel,
@@ -79,6 +79,8 @@ export default function Home() {
     isStatesLoading,
     isCitiesLoading,
     computeDisplayValue,
+    handleCountryListScroll,
+    handleStateListScroll,
     handleCityListScroll,
   } = useCSCLookup();
   const [isRegionMenuOpen, setRegionMenuOpen] = useState(false);
@@ -270,7 +272,7 @@ export default function Home() {
           onSubmit={handleSubmit}>
           {isLookupMode ? (
             <div className="space-y-4">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-x-3 gap-y-4 sm:grid-cols-2">
                 <SearchSelect
                   label="Country:"
                   inputRef={countryButtonRef}
@@ -284,7 +286,7 @@ export default function Home() {
                   onClear={() => { setCountryInput(""); setCountryQuery(""); }}
                   clearLabel="No country"
                   isCleared={countryInput === ""}
-                  options={filteredCountries.map((entry) => ({
+                  options={visibleCountries.map((entry) => ({
                     key: entry.code,
                     label: `${(entry.code3 ?? entry.code).toUpperCase()} - ${entry.name}`,
                     active: countryInput.toUpperCase() === entry.code.toUpperCase(),
@@ -296,6 +298,7 @@ export default function Home() {
                   loading={isCountriesLoading}
                   statusMessage={countriesStatus}
                   emptyMessage="No matches"
+                  onScroll={handleCountryListScroll}
                 />
                 <SearchSelect
                   label="State/Region:"
@@ -311,7 +314,7 @@ export default function Home() {
                   onClear={() => { setStateInput(""); setStateQuery(""); }}
                   clearLabel="No state"
                   isCleared={stateInput === ""}
-                  options={filteredStates.map((entry) => ({
+                  options={visibleStates.map((entry) => ({
                     key: entry.code,
                     label: `${entry.code} - ${entry.name}`,
                     active: stateInput.toUpperCase() === entry.code.toUpperCase(),
@@ -323,10 +326,11 @@ export default function Home() {
                   loading={isStatesLoading}
                   statusMessage={statesStatus}
                   emptyMessage="No matches"
+                  onScroll={handleStateListScroll}
                 />
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+              <div className="grid grid-cols-1 gap-x-3 gap-y-4 sm:grid-cols-[1fr_auto] sm:items-end">
                 <SearchSelect
                   label="City:"
                   inputRef={cityButtonRef}
@@ -355,7 +359,7 @@ export default function Home() {
                   emptyMessage="No matches"
                   onScroll={handleCityListScroll}
                 />
-                <div className="flex justify-start sm:justify-end">
+                <div className="flex justify-end sm:justify-end">
                   <button type="submit" className="flex self-end px-5 py-3 rounded-xl bg-emerald-600 text-base font-semibold text-white shadow-lg shadow-emerald-600/30
                     transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-80"
                     disabled={isLoading}>

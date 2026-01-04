@@ -1,4 +1,5 @@
 import type React from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown, Loader2 } from "lucide-react";
 
 export type OptionItem = {
@@ -49,10 +50,12 @@ export default function SearchSelect({
   loading,
   statusMessage,
   emptyMessage = "No matches",
-  scrollContainerClassName = "max-h-[min(16rem,calc(100vh-240px))] overflow-auto",
+  scrollContainerClassName,
   onScroll,
   inputClassName,
 }: SearchSelectProps) {
+  const [menuMaxHeight, setMenuMaxHeight] = useState<number>();
+  const [openUpwards, setOpenUpwards] = useState(false);
   const inputDisabled = disabled || loading;
   const hasSpinner = Boolean(loading);
   const paddingClass = "pr-12";
@@ -63,6 +66,42 @@ export default function SearchSelect({
         ? "cursor-not-allowed border-zinc-200 text-zinc-400"
         : "border-zinc-300 hover:border-emerald-300 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-200 ring-emerald-200"
     }`;
+  const baseScrollContainerClass =
+    "max-h-[min(16rem,calc(100vh-240px))] overflow-auto [scrollbar-color:#d4d4d8_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-zinc-300 [&::-webkit-scrollbar-thumb]:rounded-full";
+  const computedScrollContainerClass = `${baseScrollContainerClass} ${scrollContainerClassName ?? ""}`.trim();
+
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+    const updateMenuSizing = () => {
+      const container = menuRef?.current;
+      if (!container) return;
+
+      const rect = container.getBoundingClientRect();
+      const gap = 12;
+      const spaceBelow = window.innerHeight - rect.bottom - gap;
+      const spaceAbove = rect.top - gap;
+
+      const shouldOpenUpwards = spaceBelow < 220 && spaceAbove > spaceBelow;
+      setOpenUpwards(shouldOpenUpwards);
+
+      const availableSpace = shouldOpenUpwards ? spaceAbove : spaceBelow;
+      if (!Number.isFinite(availableSpace)) return;
+
+      // Keep the menu within the viewport while allowing comfortable scrolling.
+      const computedMax = Math.min(Math.max(availableSpace, 160), 300);
+      setMenuMaxHeight(computedMax);
+    };
+
+    updateMenuSizing();
+    window.addEventListener("resize", updateMenuSizing);
+    window.addEventListener("scroll", updateMenuSizing, true);
+    return () => {
+      window.removeEventListener("resize", updateMenuSizing);
+      window.removeEventListener("scroll", updateMenuSizing, true);
+    };
+  }, [isOpen, menuRef]);
 
   return (
     <div>
@@ -97,8 +136,17 @@ export default function SearchSelect({
           <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
         </div>
         {isOpen && (
-          <div className="absolute left-0 right-0 z-20 mt-2 max-h-72 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg ring-1 ring-black/5">
-            <div className={scrollContainerClassName} onScroll={onScroll}>
+          <div
+            className={`absolute left-0 right-0 z-20 rounded-2xl border border-zinc-200 bg-white shadow-lg ring-1 ring-black/5 ${
+              openUpwards ? "bottom-full mb-2" : "top-full mt-2"
+            }`}
+            style={menuMaxHeight ? { maxHeight: menuMaxHeight } : undefined}
+          >
+            <div
+              className={computedScrollContainerClass}
+              style={menuMaxHeight ? { maxHeight: menuMaxHeight } : undefined}
+              onScroll={onScroll}
+            >
               <button
                 type="button"
                 className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-zinc-700 transition hover:bg-emerald-50 hover:text-emerald-700"
