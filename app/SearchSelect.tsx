@@ -63,11 +63,14 @@ export default function SearchSelect({
   const paddingClass = "pr-12";
   const computedInputClass =
     inputClassName ??
-    `w-full rounded-xl border bg-white px-4 py-3 ${paddingClass} text-base text-zinc-900 shadow-sm outline-none transition ${
+    `w-full rounded-xl border bg-white px-4 py-3 ${paddingClass} text-base text-zinc-900 placeholder:text-zinc-400 shadow-sm outline-none transition ${
       inputDisabled
-        ? "cursor-not-allowed border-zinc-200 text-zinc-400"
+        ? "cursor-not-allowed border-zinc-200 bg-zinc-50 text-zinc-400 placeholder:text-zinc-400/80"
         : "border-zinc-300 hover:border-emerald-300 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-200 ring-emerald-200"
     }`;
+  const chevronClass = `pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 ${
+    inputDisabled ? "text-zinc-300/90" : "text-zinc-500"
+  }`;
   const baseScrollContainerClass =
     "max-h-[min(16rem,calc(100vh-240px))] overflow-auto [scrollbar-color:#d4d4d8_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-zinc-300 [&::-webkit-scrollbar-thumb]:rounded-full";
   const computedScrollContainerClass = `${baseScrollContainerClass} ${scrollContainerClassName ?? ""}`.trim();
@@ -136,7 +139,7 @@ export default function SearchSelect({
           {hasSpinner && (
             <Loader2 className="pointer-events-none absolute right-9 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500 animate-spin" />
           )}
-          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <ChevronDown className={chevronClass} />
         </div>
         {isOpen && (
           <div
