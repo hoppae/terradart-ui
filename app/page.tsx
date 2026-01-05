@@ -88,7 +88,8 @@ export default function Home() {
   const [isStateMenuOpen, setStateMenuOpen] = useState(false);
   const [isCityMenuOpen, setCityMenuOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
-  const scrollTimeoutRef = useRef<number | null>(null);
+  const activeScrollTargetRef = useRef<HTMLElement | null>(null);
+  const scrollResizeCleanupRef = useRef<(() => void) | null>(null);
   const regionMenuRef = useRef<HTMLDivElement>(null);
   const regionButtonRef = useRef<HTMLButtonElement>(null);
   const countryMenuRef = useRef<HTMLDivElement>(null);
@@ -103,24 +104,36 @@ export default function Home() {
     if (window.innerWidth >= 640) return; // only for xs screens
     const element = target ?? formRef.current;
     if (!element) return;
+    activeScrollTargetRef.current = element;
     const scrollToForm = () => {
-      const top = element.getBoundingClientRect().top + window.scrollY - 12;
+      const el = activeScrollTargetRef.current;
+      if (!el) return;
+      const top = el.getBoundingClientRect().top + window.scrollY - 12;
       window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
+    };
+    // Listen for viewport size shifts (keyboard) while focused.
+    if (scrollResizeCleanupRef.current) {
+      scrollResizeCleanupRef.current();
+    }
+    const resizeHandler = () => scrollToForm();
+    window.addEventListener("resize", resizeHandler);
+    const vv = typeof window.visualViewport !== "undefined" ? window.visualViewport : null;
+    vv?.addEventListener("resize", resizeHandler);
+    scrollResizeCleanupRef.current = () => {
+      window.removeEventListener("resize", resizeHandler);
+      vv?.removeEventListener("resize", resizeHandler);
     };
     // First attempt immediately after focus.
     requestAnimationFrame(scrollToForm);
-    // Retry after keyboard likely reflows the viewport.
-    if (scrollTimeoutRef.current) {
-      window.clearTimeout(scrollTimeoutRef.current);
-    }
-    scrollTimeoutRef.current = window.setTimeout(scrollToForm, 250);
   }, []);
 
   useEffect(() => {
     return () => {
-      if (scrollTimeoutRef.current) {
-        window.clearTimeout(scrollTimeoutRef.current);
+      if (scrollResizeCleanupRef.current) {
+        scrollResizeCleanupRef.current();
+        scrollResizeCleanupRef.current = null;
       }
+      activeScrollTargetRef.current = null;
     };
   }, []);
 
