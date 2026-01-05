@@ -106,7 +106,7 @@ export default function SearchSelect({
   }, [isOpen, menuRef]);
 
   return (
-    <div>
+    <div data-field-container="search-select">
       <label className="text-sm font-medium text-zinc-700">
         {label}
         {required && <span className="ml-0.5 text-red-500">*</span>}

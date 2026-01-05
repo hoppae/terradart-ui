@@ -88,10 +88,8 @@ export default function Home() {
   const [isStateMenuOpen, setStateMenuOpen] = useState(false);
   const [isCityMenuOpen, setCityMenuOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
-  const scrollTimeoutRef = useRef<number | null>(null);
-  const scrollTimeoutRefLate = useRef<number | null>(null);
   const activeScrollTargetRef = useRef<HTMLElement | null>(null);
-  const scrollResizeCleanupRef = useRef<(() => void) | null>(null);
+  const resizeCleanupRef = useRef<(() => void) | null>(null);
   const regionMenuRef = useRef<HTMLDivElement>(null);
   const regionButtonRef = useRef<HTMLButtonElement>(null);
   const countryMenuRef = useRef<HTMLDivElement>(null);
@@ -104,53 +102,36 @@ export default function Home() {
   const scrollFormIntoViewIfMobile = useCallback((target?: HTMLElement | null) => {
     if (typeof window === "undefined") return;
     if (window.innerWidth >= 640) return; // only for xs screens
-    const element = target ?? formRef.current;
+    const fieldContainer = (target?.closest("[data-field-container]") as HTMLElement | null) ?? null;
+    const element = fieldContainer ?? target ?? formRef.current;
     if (!element) return;
     activeScrollTargetRef.current = element;
-    const scrollToForm = () => {
+
+    const scrollToForm = (behavior: ScrollBehavior = "smooth") => {
       const el = activeScrollTargetRef.current;
       if (!el) return;
-      const top = el.getBoundingClientRect().top + window.scrollY - 12;
-      window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
+      try {
+        el.scrollIntoView({ behavior, block: "start", inline: "nearest" });
+      } catch {
+        console.error("scrollIntoView element not found.")
+      }
     };
-    // Listen for viewport size shifts (keyboard) while focused.
-    if (scrollResizeCleanupRef.current) {
-      scrollResizeCleanupRef.current();
+
+    if (resizeCleanupRef.current) {
+      resizeCleanupRef.current();
+      resizeCleanupRef.current = null;
     }
-    const resizeHandler = () => scrollToForm();
+    const resizeHandler = () => scrollToForm("auto");
     window.addEventListener("resize", resizeHandler);
-    const vv = typeof window.visualViewport !== "undefined" ? window.visualViewport : null;
-    vv?.addEventListener("resize", resizeHandler);
-    scrollResizeCleanupRef.current = () => {
-      window.removeEventListener("resize", resizeHandler);
-      vv?.removeEventListener("resize", resizeHandler);
-    };
-    // First attempt immediately after focus.
-    requestAnimationFrame(scrollToForm);
-    // Fallback retries when keyboard is already open or no resize event fires.
-    if (scrollTimeoutRef.current) {
-      window.clearTimeout(scrollTimeoutRef.current);
-    }
-    if (scrollTimeoutRefLate.current) {
-      window.clearTimeout(scrollTimeoutRefLate.current);
-    }
-    scrollTimeoutRef.current = window.setTimeout(scrollToForm, 160);
-    scrollTimeoutRefLate.current = window.setTimeout(scrollToForm, 360);
+    resizeCleanupRef.current = () => window.removeEventListener("resize", resizeHandler);
   }, []);
 
   useEffect(() => {
     return () => {
-      if (scrollTimeoutRef.current) {
-        window.clearTimeout(scrollTimeoutRef.current);
+      if (resizeCleanupRef.current) {
+        resizeCleanupRef.current();
+        resizeCleanupRef.current = null;
       }
-      if (scrollTimeoutRefLate.current) {
-        window.clearTimeout(scrollTimeoutRefLate.current);
-      }
-      if (scrollResizeCleanupRef.current) {
-        scrollResizeCleanupRef.current();
-        scrollResizeCleanupRef.current = null;
-      }
-      activeScrollTargetRef.current = null;
     };
   }, []);
 
@@ -396,7 +377,7 @@ export default function Home() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 gap-x-3 gap-y-4 sm:grid-cols-[1fr_auto] sm:items-end">
+              <div className="grid grid-cols-1 gap-x-3 gap-y-5 sm:grid-cols-[1fr_auto] sm:items-end">
                 <SearchSelect
                   label="City:"
                   required
