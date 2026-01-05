@@ -43,8 +43,11 @@ export function useCSCLookup(pageSize = 50) {
 
   useEffect(() => {
     let cancelled = false;
-    setIsCountriesLoading(true);
-    setCountriesStatus("");
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setIsCountriesLoading(true);
+      setCountriesStatus("");
+    });
     fetchCountries()
       .then((list) => {
         if (cancelled) return;
@@ -68,25 +71,31 @@ export function useCSCLookup(pageSize = 50) {
   useEffect(() => {
     let cancelled = false;
     // Reset state and city dropdowns whenever country changes
-    setStateInput("");
-    setStateQuery("");
-    setStates([]);
-    setStatesStatus("");
-    setIsStatesLoading(false);
-    setCityInput("");
-    setCityQuery("");
-    setCities([]);
-    setCitiesStatus("");
-    setIsCitiesLoading(false);
-    setStateVisibleCount(pageSize);
-    setCityVisibleCount(pageSize);
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setStateInput("");
+      setStateQuery("");
+      setStates([]);
+      setStatesStatus("");
+      setIsStatesLoading(false);
+      setCityInput("");
+      setCityQuery("");
+      setCities([]);
+      setCitiesStatus("");
+      setIsCitiesLoading(false);
+      setStateVisibleCount(pageSize);
+      setCityVisibleCount(pageSize);
+    });
 
     const country = countryInput.trim();
     if (!country) {
       return undefined;
     }
 
-    setIsStatesLoading(true);
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setIsStatesLoading(true);
+    });
     fetchStates(country)
       .then((list) => {
         if (cancelled) return;
@@ -110,12 +119,15 @@ export function useCSCLookup(pageSize = 50) {
   useEffect(() => {
     let cancelled = false;
     // Reset city dropdown whenever state or country changes
-    setCityInput("");
-    setCityQuery("");
-    setCities([]);
-    setCitiesStatus("");
-    setIsCitiesLoading(false);
-    setCityVisibleCount(pageSize);
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setCityInput("");
+      setCityQuery("");
+      setCities([]);
+      setCitiesStatus("");
+      setIsCitiesLoading(false);
+      setCityVisibleCount(pageSize);
+    });
 
     const country = countryInput.trim();
     if (!country) {
@@ -123,7 +135,10 @@ export function useCSCLookup(pageSize = 50) {
     }
 
     const state = stateInput.trim();
-    setIsCitiesLoading(true);
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setIsCitiesLoading(true);
+    });
     const loadCities = state
       ? fetchCitiesByState(country, state)
       : fetchCitiesByCountry(country);
@@ -149,15 +164,15 @@ export function useCSCLookup(pageSize = 50) {
   }, [countryInput, stateInput, pageSize]);
 
   useEffect(() => {
-    setCountryVisibleCount(pageSize);
+    queueMicrotask(() => setCountryVisibleCount(pageSize));
   }, [countryQuery, pageSize]);
 
   useEffect(() => {
-    setStateVisibleCount(pageSize);
+    queueMicrotask(() => setStateVisibleCount(pageSize));
   }, [stateQuery, pageSize]);
 
   useEffect(() => {
-    setCityVisibleCount(pageSize);
+    queueMicrotask(() => setCityVisibleCount(pageSize));
   }, [cityQuery, pageSize]);
 
   const filteredCountries = useMemo(() => {

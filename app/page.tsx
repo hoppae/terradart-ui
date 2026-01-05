@@ -88,6 +88,8 @@ export default function Home() {
   const [isStateMenuOpen, setStateMenuOpen] = useState(false);
   const [isCityMenuOpen, setCityMenuOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const scrollTimeoutRef = useRef<number | null>(null);
+  const scrollTimeoutRefLate = useRef<number | null>(null);
   const activeScrollTargetRef = useRef<HTMLElement | null>(null);
   const scrollResizeCleanupRef = useRef<(() => void) | null>(null);
   const regionMenuRef = useRef<HTMLDivElement>(null);
@@ -125,10 +127,25 @@ export default function Home() {
     };
     // First attempt immediately after focus.
     requestAnimationFrame(scrollToForm);
+    // Fallback retries when keyboard is already open or no resize event fires.
+    if (scrollTimeoutRef.current) {
+      window.clearTimeout(scrollTimeoutRef.current);
+    }
+    if (scrollTimeoutRefLate.current) {
+      window.clearTimeout(scrollTimeoutRefLate.current);
+    }
+    scrollTimeoutRef.current = window.setTimeout(scrollToForm, 160);
+    scrollTimeoutRefLate.current = window.setTimeout(scrollToForm, 360);
   }, []);
 
   useEffect(() => {
     return () => {
+      if (scrollTimeoutRef.current) {
+        window.clearTimeout(scrollTimeoutRef.current);
+      }
+      if (scrollTimeoutRefLate.current) {
+        window.clearTimeout(scrollTimeoutRefLate.current);
+      }
       if (scrollResizeCleanupRef.current) {
         scrollResizeCleanupRef.current();
         scrollResizeCleanupRef.current = null;
