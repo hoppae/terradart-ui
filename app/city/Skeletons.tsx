@@ -1,10 +1,10 @@
 export const SkeletonBlock = ({ className }: { className?: string }) => (
-  <div className={`animate-pulse rounded-lg bg-emerald-100 ${className ?? ""}`} />
+  <div className={`animate-pulse rounded-lg bg-muted ${className ?? ""}`} />
 );
 
 export const ActivitySkeletonCard = () => (
-  <div className="flex h-[425px] flex-col gap-2 rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 pt-4 pb-2 shadow-sm">
-    <SkeletonBlock className="h-40 w-full rounded-lg border border-emerald-100" />
+  <div className="flex h-[425px] flex-col gap-2 rounded-xl border border-border bg-secondary/60 px-4 pt-4 pb-2 shadow-sm">
+    <SkeletonBlock className="h-40 w-full rounded-lg border border-border" />
     <div className="space-y-2 flex-1">
       <SkeletonBlock className="h-5 w-full" />
       <SkeletonBlock className="h-5 w-3/4" />
@@ -62,8 +62,8 @@ export const ActivitiesSkeletonGrid = ({ count }: { count: number }) => (
 );
 
 export const PlaceSkeletonCard = () => (
-  <div className="flex h-[425px] flex-col gap-2 rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 pt-4 pb-2 shadow-sm">
-    <SkeletonBlock className="h-40 w-full rounded-lg border border-emerald-100" />
+  <div className="flex h-[425px] flex-col gap-2 rounded-xl border border-border bg-secondary/60 px-4 pt-4 pb-2 shadow-sm">
+    <SkeletonBlock className="h-40 w-full rounded-lg border border-border" />
     <div className="space-y-2 flex-1">
       <SkeletonBlock className="h-5 w-3/4" />
       <SkeletonBlock className="h-4 w-1/2" />
@@ -89,7 +89,7 @@ export const PlacesSkeletonGrid = ({ count }: { count: number }) => (
 
 export const FlagLineSkeleton = () => (
   <div className="flex items-center gap-2">
-    <SkeletonBlock className="h-5 w-7 rounded-xs" />
+    <SkeletonBlock className="h-6 w-8 rounded-xs" />
     <SkeletonBlock className="h-4 w-25" />
   </div>
 );

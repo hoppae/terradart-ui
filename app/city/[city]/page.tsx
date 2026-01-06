@@ -238,11 +238,11 @@ export default function CityDetailPage() {
     : undefined;
 
   const getWeatherIcon = (code?: number) => {
-    if (code === undefined || code === null) return <Cloud className="h-7 w-7 text-emerald-700" />;
-    if ([71, 73, 75, 77, 85, 86].includes(code)) return <CloudSnow className="h-7 w-7 text-emerald-700" />;
-    if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return <CloudRain className="h-7 w-7 text-emerald-700" />;
-    if ([0, 1].includes(code)) return <Sun className="h-7 w-7 text-emerald-700" />;
-    return <Cloud className="h-7 w-7 text-emerald-700" />;
+    if (code === undefined || code === null) return <Cloud className="h-7 w-7 text-primary" />;
+    if ([71, 73, 75, 77, 85, 86].includes(code)) return <CloudSnow className="h-7 w-7 text-primary" />;
+    if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return <CloudRain className="h-7 w-7 text-primary" />;
+    if ([0, 1].includes(code)) return <Sun className="h-7 w-7 text-primary" />;
+    return <Cloud className="h-7 w-7 text-primary" />;
   };
 
   const formatWeatherSummary = (code?: number) => {
@@ -278,26 +278,26 @@ export default function CityDetailPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-sky-50 px-4 md:px-8 py-3 font-sans text-zinc-900">
+      <div className="min-h-screen bg-background px-4 md:px-8 py-3 font-sans text-foreground">
         <header className="mx-auto flex w-full max-w-7xl items-center justify-between pb-1 md:pb-2">
-          <p className="uppercase tracking-[0.2em] text-emerald-600">
-            Terradart
+          <p className="tracking-[0.1em] text-primary text-xl">
+            TERRADART
           </p>
 
-          <Link href="/" className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-700 hover:text-emerald-800">
+          <Link href="/" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:text-primary/80">
             <ArrowLeft className="h-4 w-4" />
             Home
           </Link>
         </header>
 
         <main className="mx-auto w-full max-w-7xl space-y-6">
-          <section className="flex flex-wrap items-baseline mb-5">
+          <section className="flex flex-wrap items-baseline mb-4">
             <div>
-              <h1 className="text-4xl font-semibold leading-tight">
+              <h1 className="text-4xl font-semibold leading-tight mb-1">
                 {formattedCity}
                 {isAnyLoading && (
                   <Loader2
-                    className="ml-2 inline-block h-6 w-6 translate-y-[1px] animate-spin text-emerald-700/80 align-middle"
+                    className="ml-2 inline-block h-6 w-6 translate-y-[1px] animate-spin text-primary/80 align-middle"
                     aria-label="Loading city data"
                   />
                 )}
@@ -306,13 +306,13 @@ export default function CityDetailPage() {
                 <FlagLineSkeleton />
               ) : (
                 (resolvedState || resolvedCountry || detail?.country_details?.name?.common) && (
-                  <div className="flex flex-wrap items-center gap-2 text-[15px] text-zinc-700">
+                  <div className="flex flex-wrap items-center gap-2 text-lg text-muted-foreground ml-[2px]">
                     {detail?.country_details?.flags?.png && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={detail.country_details.flags.png}
                         alt={detail.country_details.flags.alt || "Country flag"}
-                        className="h-5 w-7 rounded-xs"
+                        className="h-6 w-8 rounded-xs"
                       />
                     )}
                     {[resolvedState, detail?.country_details?.name?.common].filter(Boolean).join(", ") && (
@@ -324,26 +324,27 @@ export default function CityDetailPage() {
                 )
               )}
             </div>
+
           </section>
 
           {status && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 shadow-sm">
+            <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive shadow-sm">
               {status}
             </div>
           )}
 
           <section className="grid gap-4 md:grid-cols-2">
-            <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm h-[24rem]">
-              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-700">
+            <article className="rounded-2xl border border-border bg-card p-5 shadow-sm h-[24rem]">
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-primary">
                 <Landmark className="h-5 w-5" />
                 Overview
               </div>
               {isOverviewLoading ? (
                 <OverviewSkeleton />
               ) : (
-                <div className="text-zinc-700 h-[19.5rem] overflow-y-auto pr-1">
+                <div className="text-muted-foreground h-[19.5rem] overflow-y-auto pr-1">
                   {Boolean(detail?.errors?.summary) ? (
-                    <p className="text-red-600 mb-2">Unable to load overview for this city.</p>
+                    <p className="text-destructive mb-2">Unable to load overview for this city.</p>
                   ) : (
                     <p>{detail?.summary || "No overview available for this city yet."}</p>
                   )}
@@ -351,22 +352,22 @@ export default function CityDetailPage() {
               )}
             </article>
 
-            <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm h-[24rem]">
-              <div className="mb-1 sm:mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-700">
+            <article className="rounded-2xl border border-border bg-card p-5 shadow-sm h-[24rem]">
+              <div className="mb-1 sm:mb-2 flex items-center gap-2 text-sm font-semibold text-primary">
                 <MapPinned className="h-5 w-5" />
                 Location
               </div>
               {isLocationLoading ? (
                 <LocationSkeleton />
               ) : !hasBaseDetail ? (
-                <p className="text-red-600">Unable to load location for this city.</p>
+                <p className="text-destructive">Unable to load location for this city.</p>
               ) : (
                 <>
                   {hasWeather && (
-                    <div className="mb-2 space-y-2 text-sm text-zinc-700">
+                    <div className="mb-2 space-y-2 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2 overflow-hidden">
                         <div className="mr-1">
-                          <div className="flex text-2xl font-semibold text-zinc-900 gap-2">
+                          <div className="flex text-2xl font-semibold text-foreground gap-2">
                             <div className="mt-[3px]">{getWeatherIcon(weatherCurrent.weathercode)}</div>
                             <div className="self-center">
                               {weatherCurrent.temperature !== undefined ? `${weatherCurrent.temperature}${tempUnit}` : "—"}
@@ -378,7 +379,7 @@ export default function CityDetailPage() {
                         </div>
                         <div className="flex flex-col lg:gap-1 overflow-hidden">
                           <div className="flex flex-wrap items-center gap-x-1 overflow-hidden text-ellipsis text-xs lg:text-sm">
-                            <span className="font-semibold text-emerald-700 text-sm">Today</span>
+                            <span className="font-semibold text-primary text-sm">Today</span>
                             {currentWeatherSummary && (
                               <>
                                 <span>•</span>
@@ -406,7 +407,7 @@ export default function CityDetailPage() {
                           </div>
                           {weatherNext && (
                             <div className="flex flex-wrap items-center gap-x-1 overflow-hidden text-ellipsis text-xs lg:text-sm">
-                              <span className="font-semibold text-emerald-700 text-sm">Tomorrow</span>
+                              <span className="font-semibold text-primary text-sm">Tomorrow</span>
                               {formatWeatherSummary(weatherNext.weathercode) && (
                                 <>
                                   <span>•</span>
@@ -425,10 +426,10 @@ export default function CityDetailPage() {
                     </div>
                   )}
                   {!loadingWeather && !hasWeather && Boolean(detail?.errors?.weather) && (
-                    <p className="text-red-600">Unable to load weather for this city.</p>
+                    <p className="text-destructive">Unable to load weather for this city.</p>
                   )}
-                  <div className={`space-y-2 text-zinc-700 ${hasWeather ? "h-[16rem]" : "h-[19.5rem]"}`}>
-                    <div className="overflow-hidden rounded-xl border border-emerald-100 shadow-sm h-full">
+                  <div className={`space-y-2 text-muted-foreground ${hasWeather ? "h-[16rem]" : "h-[19.5rem]"}`}>
+                    <div className="overflow-hidden rounded-xl border border-border shadow-sm h-full">
                       <iframe title={`Map of ${formattedCity}`} className="h-full w-full border-0"
                         src={`https://www.google.com/maps/?q=${locationQuery}&z=8&output=embed`}
                         referrerPolicy="no-referrer-when-downgrade"/>
@@ -438,19 +439,19 @@ export default function CityDetailPage() {
               )}
             </article>
 
-            <article className="md:col-span-2 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-700">
+            <article className="md:col-span-2 rounded-2xl border border-border bg-card p-5 shadow-sm">
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-primary">
                 <TentTree className="h-5 w-5" />
                 Activities
               </div>
               {isActivitiesLoading && <ActivitiesSkeletonGrid count={itemsPerPage} />}
               {!isActivitiesLoading && Boolean(detail?.errors?.activities) && (
-                <p className="text-red-600">Unable to load activities for this city.</p>
+                <p className="text-destructive">Unable to load activities for this city.</p>
               )}
               {!isActivitiesLoading &&
                 !detail?.errors?.activities &&
                 (!detail?.activities || detail.activities.length === 0) && (
-                <p className="text-zinc-600">No activities found for this city.</p>
+                <p className="text-muted-foreground">No activities found for this city.</p>
               )}
               {!isActivitiesLoading && detail?.activities && detail.activities.length > 0 && (
                 <>
@@ -476,17 +477,17 @@ export default function CityDetailPage() {
                   </div>
 
                   {pageCount > 1 && (
-                    <div className="mt-4 flex items-center justify-between text-sm text-zinc-700">
-                      <button type="button" className="rounded-full border border-emerald-200 px-3 py-2 font-medium text-emerald-700 transition
-                        hover:border-emerald-300 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50" disabled={currentPage === 0}
+                    <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
+                      <button type="button" className="rounded-full border border-border px-3 py-2 font-medium text-primary transition
+                        hover:border-primary hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50" disabled={currentPage === 0}
                         onClick={() => setPage((p) => Math.max(0, p - 1))}>
                         Back
                       </button>
                       <span>
                         Page {currentPage + 1} of {pageCount}
                       </span>
-                      <button type="button" className="rounded-full border border-emerald-200 px-3 py-2 font-medium text-emerald-700 transition
-                        hover:border-emerald-300 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50" disabled={currentPage >= pageCount - 1}
+                      <button type="button" className="rounded-full border border-border px-3 py-2 font-medium text-primary transition
+                        hover:border-primary hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50" disabled={currentPage >= pageCount - 1}
                         onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}>
                         Next
                       </button>
@@ -496,19 +497,19 @@ export default function CityDetailPage() {
               )}
             </article>
 
-            <article className="md:col-span-2 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-700">
+            <article className="md:col-span-2 rounded-2xl border border-border bg-card p-5 shadow-sm">
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-primary">
                 <BottleWine className="h-5 w-5" />
                 Places
               </div>
               {isPlacesLoading && <PlacesSkeletonGrid count={itemsPerPage} />}
               {!isPlacesLoading && Boolean(detail?.errors?.places) && (
-                <p className="text-red-600">Unable to load places for this city.</p>
+                <p className="text-destructive">Unable to load places for this city.</p>
               )}
               {!isPlacesLoading &&
                 !detail?.errors?.places &&
                 (!places || places.length === 0) && (
-                <p className="text-zinc-600">No places found for this city.</p>
+                <p className="text-muted-foreground">No places found for this city.</p>
               )}
               {!isPlacesLoading && places && places.length > 0 && (
                 <>
@@ -526,17 +527,17 @@ export default function CityDetailPage() {
                   </div>
 
                   {placesPageCount > 1 && (
-                    <div className="mt-4 flex items-center justify-between text-sm text-zinc-700">
-                      <button type="button" className="rounded-full border border-emerald-200 px-3 py-2 font-medium text-emerald-700 transition
-                        hover:border-emerald-300 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50" disabled={currentPlacesPage === 0}
+                    <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
+                      <button type="button" className="rounded-full border border-border px-3 py-2 font-medium text-primary transition
+                        hover:border-primary hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50" disabled={currentPlacesPage === 0}
                         onClick={() => setPlacesPage((p) => Math.max(0, p - 1))}>
                         Back
                       </button>
                       <span>
                         Page {currentPlacesPage + 1} of {placesPageCount}
                       </span>
-                      <button type="button" className="rounded-full border border-emerald-200 px-3 py-2 font-medium text-emerald-700 transition
-                        hover:border-emerald-300 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50" disabled={currentPlacesPage >= placesPageCount - 1}
+                      <button type="button" className="rounded-full border border-border px-3 py-2 font-medium text-primary transition
+                        hover:border-primary hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50" disabled={currentPlacesPage >= placesPageCount - 1}
                         onClick={() => setPlacesPage((p) => Math.min(placesPageCount - 1, p + 1))}>
                         Next
                       </button>

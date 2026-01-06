@@ -23,10 +23,10 @@ const trendingCities = [
   { name: "Barcelona", country: "ES" },
   { name: "Rome", country: "IT" },
   { name: "Prague", country: "CZ" },
-  { name: "Berlin", country: "DE" },
+  { name: "Munich", country: "DE" },
   { name: "Lisbon", country: "PT" },
   { name: "London", country: "GB" },
-  { name: "Glasgow", country: "GB" },
+  { name: "Edinburgh", country: "GB" },
   { name: "New York City", country: "US" },
   { name: "Los Angeles", country: "US" },
   { name: "Mexico City", country: "MX" },
@@ -272,42 +272,40 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen lg:items-center justify-center bg-gradient-to-br from-emerald-50 via-white
-      to-sky-50 px-0 lg:px-4 font-sans text-zinc-900">
+    <div className="flex min-h-screen lg:items-center justify-center bg-background px-0 lg:px-4 font-sans text-foreground">
       <main className="w-full min-h-screen lg:min-h-fit lg:max-w-3xl bg-transparent
-        lg:bg-white/80 p-6 lg:p-10 lg:rounded-3xl lg:border lg:border-white/60 lg:shadow-xl lg:backdrop-blur">
+        lg:bg-card/80 p-6 lg:p-10 lg:rounded-3xl lg:border lg:border-border lg:shadow-xl lg:backdrop-blur">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div className="space-y-2">
-            <p className="uppercase tracking-[0.2em] text-emerald-600">
-              Terradart
+            <p className="tracking-[0.1em] text-primary text-2xl">
+              TERRADART
             </p>
             <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
               Find your next spot.
             </h1>
-            <p className="max-w-2xl text-lg text-zinc-600">
+            <p className="max-w-2xl text-lg text-muted-foreground">
               Choose a region and let us surprise you, or jump straight to the city you have in mind.
               Perfect for planning your next adventure, or just exploring the world.
             </p>
           </div>
         </div>
 
-        <div className="rounded-xl border border-zinc-200 bg-white shadow-sm w-fit mb-5">
+        <div className="rounded-xl border border-border bg-card shadow-sm w-fit">
           <button type="button" className={`rounded-xl px-4 py-2 text-sm font-semibold transition focus-visible:outline-none
-            focus-visible:ring-2 focus-visible:ring-emerald-300 
-            ${!isLookupMode ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/30" : "text-zinc-700 hover:text-emerald-700"}`}
+            focus-visible:ring-2 focus-visible:ring-ring 
+            ${!isLookupMode ? "bg-primary text-primary-foreground shadow-sm shadow-primary/30" : "text-muted-foreground hover:text-primary"}`}
             onClick={() => switchMode("surprise")}>
             Surprise me
           </button>
           <button type="button" className={`rounded-xl px-4 py-2 text-sm font-semibold transition focus-visible:outline-none
-            focus-visible:ring-2 focus-visible:ring-emerald-300
-            ${isLookupMode ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/30" : "text-zinc-700 hover:text-emerald-700"}`}
+            focus-visible:ring-2 focus-visible:ring-ring
+            ${isLookupMode ? "bg-primary text-primary-foreground shadow-sm shadow-primary/30" : "text-muted-foreground hover:text-primary"}`}
             onClick={() => switchMode("lookup")}>
             Search a city
           </button>
         </div>
 
-        <form ref={formRef} className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-6 shadow-sm transition"
-          onSubmit={handleSubmit}>
+        <form ref={formRef} className="mt-5 mb-8" onSubmit={handleSubmit}>
           {isLookupMode ? (
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-x-3 gap-y-4 sm:grid-cols-2">
@@ -411,8 +409,8 @@ export default function Home() {
                   onScroll={handleCityListScroll}
                 />
                 <div className="flex justify-end sm:justify-end">
-                  <button type="submit" className="flex self-end px-5 py-3 rounded-xl bg-emerald-600 text-base font-semibold text-white shadow-lg shadow-emerald-600/30
-                    transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-80"
+                  <button type="submit" className="flex self-end px-5 py-3 rounded-xl bg-primary text-base font-semibold text-primary-foreground shadow-lg shadow-primary/30
+                    transition hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-80"
                     disabled={isLoading}>
                     {isLoading ? (
                       <>
@@ -432,27 +430,27 @@ export default function Home() {
           ) : (
             <>
               <div className="pb-5">
-                <label className="text-sm font-medium text-zinc-700">
+                <label className="text-sm font-medium text-foreground">
                   Pick a region:
                 </label>
                 <div className="relative w-full mt-1">
                   <div ref={regionMenuRef} className="relative">
-                    <button ref={regionButtonRef} type="button" className="flex w-full items-center justify-between rounded-xl border border-zinc-300
-                      bg-white px-4 py-3 text-left text-base text-zinc-900 shadow-sm outline-none ring-emerald-200 transition hover:border-emerald-300
-                      focus:border-emerald-300 focus:ring-2 focus:ring-emerald-200" aria-haspopup="listbox" aria-expanded={isRegionMenuOpen}
+                    <button ref={regionButtonRef} type="button" className="flex w-full items-center justify-between rounded-xl border border-input
+                      bg-card px-4 py-3 text-left text-base text-foreground shadow-sm outline-none ring-ring transition hover:border-primary
+                      focus:border-primary focus:ring-2 focus:ring-ring" aria-haspopup="listbox" aria-expanded={isRegionMenuOpen}
                       onClick={() => setRegionMenuOpen((open) => !open)}>
                       <span>{activeRegionLabel}</span>
-                      <ChevronDown className="h-4 w-4 text-zinc-500" />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
                     </button>
                     {isRegionMenuOpen && (
                       <div className="region-menu absolute left-0 right-0 z-10 mt-2 max-h-60 overflow-auto rounded-2xl
-                        border border-zinc-200 bg-white shadow-lg ring-1 ring-black/5">
+                        border border-border bg-popover shadow-lg ring-1 ring-black/5">
                         <div role="listbox" aria-label="Region options">
                           {regions.map((region) => {
                             const isActive = region.value === selectedRegion;
                             return (
                               <button key={region.value} type="button" className={`w-full px-4 py-3 text-left text-sm font-medium transition
-                                ${isActive ? "bg-emerald-50 text-emerald-700" : "text-zinc-800 hover:bg-emerald-50 hover:text-emerald-700"}`}
+                                ${isActive ? "bg-accent text-primary" : "text-popover-foreground hover:bg-accent hover:text-primary"}`}
                                 onClick={() => { setSelectedRegion(region.value); setRegionMenuOpen(false); }}>
                                 {region.label}
                               </button>
@@ -467,7 +465,7 @@ export default function Home() {
 
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <fieldset className="flex flex-col gap-2 text-sm">
-                  <legend className="text-sm font-medium text-zinc-700 pb-2">
+                  <legend className="text-sm font-medium text-foreground pb-2">
                     Go to a:
                   </legend>
                   <label className="flex items-center gap-2">
@@ -477,7 +475,7 @@ export default function Home() {
                       value="capital"
                       checked={wantsCapital}
                       onChange={() => setWantsCapital(true)}
-                      className="h-4 w-4 border-emerald-300 text-emerald-600 accent-emerald-600 focus:ring-emerald-400"
+                      className="h-4 w-4 border-primary text-primary accent-primary focus:ring-ring"
                     />
                     Capital city
                   </label>
@@ -488,14 +486,14 @@ export default function Home() {
                       value="random"
                       checked={!wantsCapital}
                       onChange={() => setWantsCapital(false)}
-                      className="h-4 w-4 border-emerald-300 text-emerald-600 accent-emerald-600 focus:ring-emerald-400"
+                      className="h-4 w-4 border-primary text-primary accent-primary focus:ring-ring"
                     />
                     Random city
                   </label>
                 </fieldset>
 
-                <button type="submit" className="flex self-end px-5 py-3 rounded-xl bg-emerald-600 text-base font-semibold text-white shadow-lg shadow-emerald-600/30
-                  transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-80"
+                <button type="submit" className="flex self-end px-5 py-3 rounded-xl bg-primary text-base font-semibold text-primary-foreground shadow-lg shadow-primary/30
+                  transition hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-80"
                   disabled={isLoading}>
                   {isLoading ? (
                     <>
@@ -515,18 +513,18 @@ export default function Home() {
         </form>
 
         {status && (
-          <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 shadow-sm">
+          <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive shadow-sm">
             {status}
           </div>
         )}
 
-        <div className="mt-6 space-y-2 text-xs">
+        <div className="space-y-2 text-xs mt-8">
           <div className="flex flex-wrap gap-x-3 gap-y-1">
-            <span className="font-semibold text-zinc-900">Discover a trending city:</span>
+            <span className="font-semibold text-foreground">Discover a trending city:</span>
             {trendingCities.map((city) => (
-              <Link key={city.name} prefetch={false} className="font-semibold text-emerald-600 transition hover:text-emerald-700
-                hover:underline underline-offset-2 decoration-emerald-200 focus-visible:outline-none focus-visible:ring-2
-                focus-visible:ring-emerald-300" href={`/city/${encodeURIComponent(city.name)}?country=${city.country}`}>
+              <Link key={city.name} prefetch={false} className="font-semibold text-primary transition hover:text-primary/80
+                hover:underline underline-offset-2 decoration-primary/30 focus-visible:outline-none focus-visible:ring-2
+                focus-visible:ring-ring" href={`/city/${encodeURIComponent(city.name)}?country=${city.country}`}>
                 {city.name !== "New York City" ? city.name : "New York"}
               </Link>
             ))}

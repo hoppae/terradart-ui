@@ -65,22 +65,22 @@ export function ActivityCard({ activity, image, shortDescription, hasMore, onSho
   const descriptionClamp = titleLines <= 1 ? "line-clamp-8" : "line-clamp-7";
 
   return (
-    <div className="flex h-[425px] flex-col gap-2 rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 pt-4 pb-2 text-zinc-800 shadow-sm">
+    <div className="flex h-[425px] flex-col gap-2 rounded-xl border border-border bg-secondary/60 px-4 pt-4 pb-2 text-foreground shadow-sm">
       {image && (
-        <div className="rounded-lg border border-emerald-100">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="h-40 w-full object-cover" src={image} alt={activity.name ?? "Activity image"}/>
-        </div>
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="h-40 w-full object-cover" src={image} alt={activity.name ?? "Activity image"}/>
+          </>
       )}
       <div className="space-y-1 flex-1">
         <h3 ref={titleRef} className="text-base font-semibold line-clamp-2" title={activity.name ?? "Activity"}>
           {activity.name ?? "Activity"}
         </h3>
-        <p className={`text-sm text-zinc-700 ${descriptionClamp}`}>{shortDescription}</p>
+        <p className={`text-sm text-muted-foreground ${descriptionClamp}`}>{shortDescription}</p>
       </div>
       <div className="flex justify-end">
         {hasMore && onShowMore && (
-          <button type="button" className="text-sm font-semibold text-emerald-700 hover:text-emerald-800"
+          <button type="button" className="text-sm font-semibold text-primary hover:text-primary/80"
             onClick={onShowMore}>
             Show more
           </button>
