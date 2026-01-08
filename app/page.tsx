@@ -67,6 +67,8 @@ export default function Home() {
     visibleCountries,
     visibleStates,
     visibleCities,
+    cityTotalCount,
+    hasCityFetchAttempted,
     selectedCountryLabel,
     selectedStateLabel,
     selectedStateName,
@@ -195,6 +197,29 @@ export default function Home() {
     input: cityInput,
     label: selectedCityLabel,
   });
+  const typedCity = (cityQuery || cityInput).trim();
+  const cityOptions = visibleCities.map((entry) => ({
+    key: entry.id,
+    label: entry.name,
+    active: cityInput.toLowerCase() === entry.name.toLowerCase(),
+    onSelect: () => {
+      setCityInput(entry.name);
+      setCityQuery("");
+    },
+  }));
+  const showTypedFallback = cityTotalCount > 0 && cityOptions.length === 0 && typedCity;
+  if (showTypedFallback) {
+    cityOptions.push({
+      key: "typed-city",
+      label: `Use "${typedCity}"`,
+      active: true,
+      onSelect: () => {
+        setCityInput(typedCity);
+        setCityQuery("");
+      },
+    });
+  }
+  const showPlainCityInput = !isCitiesLoading && hasCityFetchAttempted && cityTotalCount === 0;
 
   const switchMode = (nextMode: "surprise" | "lookup") => {
     setStatus("");
@@ -277,7 +302,7 @@ export default function Home() {
         lg:bg-card/80 p-6 lg:p-10 lg:rounded-3xl lg:border lg:border-border lg:shadow-xl lg:backdrop-blur">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div className="space-y-2">
-            <p className="tracking-[0.1em] text-primary text-2xl">
+            <p className="tracking-[0.1em] text-primary text-xl">
               TERRADART
             </p>
             <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
@@ -375,40 +400,58 @@ export default function Home() {
               </div>
 
               <div className="grid grid-cols-1 gap-x-3 gap-y-5 sm:grid-cols-[1fr_auto] sm:items-end">
-                <SearchSelect
-                  label="City:"
-                  required
-                  inputRef={cityButtonRef}
-                  menuRef={cityMenuRef}
-                  value={cityDisplayValue}
-                  placeholder={selectedCityLabel}
-                  disabled={!countryInput || isCitiesLoading}
-                  isOpen={isCityMenuOpen}
-                  setOpen={setCityMenuOpen}
-                  onChange={setCityQuery}
-                  onFocus={() => {
-                    if (!countryInput || isCitiesLoading) return;
-                    scrollFormIntoViewIfMobile(cityButtonRef.current);
-                    closeAllMenus();
-                  }}
-                  onClear={() => { setCityInput(""); setCityQuery(""); }}
-                  clearLabel="No city"
-                  isCleared={cityInput === ""}
-                  options={visibleCities.map((entry) => ({
-                    key: entry.id,
-                    label: entry.name,
-                    active: cityInput.toLowerCase() === entry.name.toLowerCase(),
-                    onSelect: () => {
-                      setCityInput(entry.name);
-                      setCityQuery("");
-                    },
-                  }))}
-                  loading={isCitiesLoading}
-                  statusMessage={citiesStatus}
-                  emptyMessage="No matches"
-                  onScroll={handleCityListScroll}
-                />
-                <div className="flex justify-end sm:justify-end">
+                {showPlainCityInput ? (
+                  <div data-field-container="city-plain-input">
+                    <label className="text-sm font-medium text-foreground">
+                      City:<span className="ml-0.5 text-destructive">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={cityInput}
+                      required
+                      disabled={!countryInput}
+                      onFocus={() => {
+                        if (!countryInput) return;
+                        scrollFormIntoViewIfMobile(cityButtonRef.current);
+                        closeAllMenus();
+                      }}
+                      onChange={(event) => {
+                        setCityInput(event.target.value);
+                        setCityQuery("");
+                      }}
+                      placeholder="Enter city"
+                      className="mt-1 w-full rounded-xl border border-input bg-card px-4 py-3 text-base text-foreground placeholder:text-muted-foreground shadow-sm outline-none transition hover:border-primary focus:border-primary focus:ring-2 focus:ring-ring ring-ring disabled:cursor-not-allowed disabled:opacity-80"
+                    />
+                    <p className="text-xs text-muted-foreground absolute ml-2 mt-1">No cities found. Try entering one manually.</p>
+                  </div>
+                ) : (
+                  <SearchSelect
+                    label="City:"
+                    required
+                    inputRef={cityButtonRef}
+                    menuRef={cityMenuRef}
+                    value={cityDisplayValue}
+                    placeholder={selectedCityLabel}
+                    disabled={!countryInput || isCitiesLoading}
+                    isOpen={isCityMenuOpen}
+                    setOpen={setCityMenuOpen}
+                    onChange={setCityQuery}
+                    onFocus={() => {
+                      if (!countryInput || isCitiesLoading) return;
+                      scrollFormIntoViewIfMobile(cityButtonRef.current);
+                      closeAllMenus();
+                    }}
+                    onClear={() => { setCityInput(""); setCityQuery(""); }}
+                    clearLabel="No city"
+                    isCleared={cityInput === ""}
+                    options={cityOptions}
+                    loading={isCitiesLoading}
+                    statusMessage={citiesStatus}
+                    emptyMessage="No matches"
+                    onScroll={handleCityListScroll}
+                  />
+                )}
+                <div className={`flex justify-end sm:justify-end ${showPlainCityInput ? "mt-3" : ""}`}>
                   <button type="submit" className="flex self-end px-5 py-3 rounded-xl bg-primary text-base font-semibold text-primary-foreground shadow-lg shadow-primary/30
                     transition hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-80"
                     disabled={isLoading}>

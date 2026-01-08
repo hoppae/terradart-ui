@@ -280,7 +280,7 @@ export default function CityDetailPage() {
     <>
       <div className="min-h-screen bg-background px-4 md:px-8 py-3 font-sans text-foreground">
         <header className="mx-auto flex w-full max-w-7xl items-center justify-between pb-1 md:pb-2">
-          <p className="tracking-[0.1em] text-primary text-xl">
+          <p className="tracking-[0.1em] text-primary text-lg">
             TERRADART
           </p>
 

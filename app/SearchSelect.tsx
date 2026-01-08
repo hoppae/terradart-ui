@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, Loader2 } from "lucide-react";
 
 export type OptionItem = {
@@ -58,9 +58,28 @@ export default function SearchSelect({
 }: SearchSelectProps) {
   const [menuMaxHeight, setMenuMaxHeight] = useState<number>();
   const [openUpwards, setOpenUpwards] = useState(false);
+  const [highlightedKey, setHighlightedKey] = useState<OptionItem["key"] | null>(null);
   const inputDisabled = disabled || loading;
   const hasSpinner = Boolean(loading);
   const paddingClass = "pr-12";
+  const hasActiveOption = options.some((option) => option.active);
+  const moveHighlight = (direction: 1 | -1) => {
+    if (!options.length) return;
+    const currentIndex = options.findIndex((option) => option.key === (highlightedKey ?? highlightedOption?.key));
+    const fallbackIndex = direction === 1 ? 0 : options.length - 1;
+    const nextIndex =
+      currentIndex === -1
+        ? fallbackIndex
+        : (currentIndex + direction + options.length) % options.length;
+    setHighlightedKey(options[nextIndex]?.key ?? null);
+  };
+  const highlightedOption = useMemo(() => {
+    const match = options.find((option) => option.key === highlightedKey);
+    if (match) return match;
+    const active = options.find((option) => option.active);
+    if (active) return active;
+    return options[0];
+  }, [highlightedKey, options]);
   const computedInputClass =
     inputClassName ??
     `w-full rounded-xl border bg-card px-4 py-3 ${paddingClass} text-base text-foreground placeholder:text-muted-foreground shadow-sm outline-none transition ${
@@ -77,8 +96,23 @@ export default function SearchSelect({
 
   useEffect(() => {
     if (!isOpen) {
+      setHighlightedKey(null);
       return undefined;
     }
+
+    if (options.length) {
+      const stillVisible = options.find((option) => option.key === highlightedKey);
+      if (stillVisible) {
+        // keep current highlight if still present
+        setHighlightedKey(stillVisible.key);
+      } else {
+        const active = options.find((option) => option.active);
+        setHighlightedKey(active?.key ?? options[0]?.key ?? null);
+      }
+    } else {
+      setHighlightedKey(null);
+    }
+
     const updateMenuSizing = () => {
       const container = menuRef?.current;
       if (!container) return;
@@ -106,7 +140,7 @@ export default function SearchSelect({
       window.removeEventListener("resize", updateMenuSizing);
       window.removeEventListener("scroll", updateMenuSizing, true);
     };
-  }, [isOpen, menuRef]);
+  }, [isOpen, menuRef, options, highlightedKey]);
 
   return (
     <div data-field-container="search-select">
@@ -126,6 +160,45 @@ export default function SearchSelect({
               if (inputDisabled) return;
               onFocus?.();
               setOpen(true);
+            }}
+            onKeyDown={(event) => {
+              if (inputDisabled) return;
+
+              if (event.key === "ArrowDown") {
+                event.preventDefault();
+                if (!isOpen) {
+                  setOpen(true);
+                  if (options.length) {
+                    setHighlightedKey(options[0]?.key ?? null);
+                  }
+                  return;
+                }
+                moveHighlight(1);
+                return;
+              }
+
+              if (event.key === "ArrowUp") {
+                event.preventDefault();
+                if (!isOpen) {
+                  setOpen(true);
+                  if (options.length) {
+                    setHighlightedKey(options[options.length - 1]?.key ?? null);
+                  }
+                  return;
+                }
+                moveHighlight(-1);
+                return;
+              }
+
+              if (event.key === "Enter") {
+                if (!isOpen || !options.length) return;
+                const target = highlightedOption ?? options[0];
+                if (target) {
+                  event.preventDefault();
+                  target.onSelect();
+                  setOpen(false);
+                }
+              }
             }}
             onChange={(event) => {
               if (inputDisabled) return;
@@ -163,15 +236,18 @@ export default function SearchSelect({
               ) : options.length === 0 ? (
                 <div className="px-4 py-2.5 text-sm text-muted-foreground">{emptyMessage}</div>
               ) : (
-                options.map((option) => (
+                options.map((option, index) => {
+                  const isHighlighted =
+                    option.key === highlightedKey ||
+                    (!highlightedKey && (option.active || (!hasActiveOption && index === 0)));
+                  return (
                   <button
                     key={option.key}
                     type="button"
                     className={`w-full px-4 py-2.5 text-left text-sm font-medium transition ${
-                      option.active
-                        ? "bg-accent text-primary"
-                        : "text-popover-foreground hover:bg-accent hover:text-primary"
+                      isHighlighted ? "bg-accent text-primary" : "text-popover-foreground hover:bg-accent hover:text-primary"
                     }`}
+                    onMouseEnter={() => setHighlightedKey(option.key)}
                     onClick={() => {
                       option.onSelect();
                       setOpen(false);
@@ -179,7 +255,7 @@ export default function SearchSelect({
                   >
                     {option.label}
                   </button>
-                ))
+                );})
               )}
             </div>
           </div>

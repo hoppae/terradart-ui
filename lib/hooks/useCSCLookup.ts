@@ -40,6 +40,7 @@ export function useCSCLookup(pageSize = 50) {
   const [countryVisibleCount, setCountryVisibleCount] = useState(pageSize);
   const [stateVisibleCount, setStateVisibleCount] = useState(pageSize);
   const [cityVisibleCount, setCityVisibleCount] = useState(pageSize);
+  const [hasCityFetchAttempted, setHasCityFetchAttempted] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -85,6 +86,7 @@ export function useCSCLookup(pageSize = 50) {
       setIsCitiesLoading(false);
       setStateVisibleCount(pageSize);
       setCityVisibleCount(pageSize);
+      setHasCityFetchAttempted(false);
     });
 
     const country = countryInput.trim();
@@ -138,6 +140,7 @@ export function useCSCLookup(pageSize = 50) {
     queueMicrotask(() => {
       if (cancelled) return;
       setIsCitiesLoading(true);
+      setHasCityFetchAttempted(true);
     });
     const loadCities = state
       ? fetchCitiesByState(country, state)
@@ -207,6 +210,7 @@ export function useCSCLookup(pageSize = 50) {
   );
   const visibleStates = useMemo(() => filteredStates.slice(0, stateVisibleCount), [filteredStates, stateVisibleCount]);
   const visibleCities = useMemo(() => filteredCities.slice(0, cityVisibleCount), [filteredCities, cityVisibleCount]);
+  const cityTotalCount = cities.length;
 
   const handleCountryListScroll = useCallback(
     (event: React.UIEvent<HTMLDivElement>) => {
@@ -284,6 +288,8 @@ export function useCSCLookup(pageSize = 50) {
     visibleCountries,
     visibleStates,
     visibleCities,
+    cityTotalCount,
+    hasCityFetchAttempted,
     selectedCountryLabel,
     selectedStateLabel,
     selectedStateName,
