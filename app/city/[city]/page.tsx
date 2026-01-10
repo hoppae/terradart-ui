@@ -210,8 +210,9 @@ export default function CityDetailPage() {
   const visibleActivities = activities.slice(start, start + itemsPerPage);
   const visiblePlaces = sortedPlaces.slice(placesStart, placesStart + itemsPerPage);
 
+  const countryName = detail?.country_details?.name?.common;
   const locationQuery = encodeURIComponent(
-    [formattedCity, resolvedState || resolvedCountry].filter(Boolean).join(", ") || formattedCity,
+    [formattedCity, resolvedState || countryName].filter(Boolean).join(", ") || formattedCity,
   );
 
   const hasBaseDetail = hasBaseSuccess && !!detail;
@@ -458,9 +459,8 @@ export default function CityDetailPage() {
                   <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {visibleActivities.map((activity, index) => {
                       const image = activity.pictures?.[0];
-                      const rawPreview = activity.shortDescription || activity.description || "No description provided.";
                       const activityId = activity.id ?? `${activity.name ?? "activity"}-${start + index}`;
-                      const shortDescription = stripHtml(rawPreview);
+                      const shortDescription = activity.shortDescription || activity.description || "No description provided.";
                       const hasMore = !!activity.description;
 
                       return (

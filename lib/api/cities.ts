@@ -12,13 +12,13 @@ type CityResponse = {
   iso2_state_code?: string;
 };
 
-type CitySection = "base" | "summary" | "weather" | "activities" | "places";
+type CitySection = "base" | "summary" | "weather" | "activities" | "amadeus_activities" | "viator_activities" | "places";
 type CityInclude = CitySection;
 type CitySectionKey = CitySection;
 export type CitySectionErrors = Partial<Record<CitySectionKey, unknown>>;
 type FetchCityDetailOptions = { state?: string | null; country?: string | null; includes?: CityInclude[] };
 type FetchCitySectionOptions = { state?: string | null; country?: string | null };
-const DEFAULT_CITY_SECTIONS: CityInclude[] = ["base", "summary", "weather", "activities", "places"];
+const DEFAULT_CITY_SECTIONS: CityInclude[] = ["base", "summary", "weather", "viator_activities", "places"];
 
 export async function fetchCityByRegion(region: string, wantsCapital: boolean): Promise<CityResponse> {
   const capitalSuffix = wantsCapital ? "?capital=true" : "";
@@ -202,19 +202,7 @@ export type CityDetail = {
     latitude?: number;
     longitude?: number;
   };
-  activities?: Array<{
-    id?: string;
-    name?: string;
-    shortDescription?: string;
-    description?: string;
-    bookingLink?: string;
-    pictures?: string[];
-    price?: {
-      amount?: string;
-      currencyCode?: string;
-    };
-    minimumDuration?: string;
-  }>;
+  activities?: Array<Activity>;
   places?: Array<{
     fsq_place_id?: string;
     name?: string;
@@ -271,8 +259,89 @@ export type CityDetail = {
   errors?: CitySectionErrors;
 };
 
+export type Activity = {
+  id?: string;
+  name?: string;
+  shortDescription?: string;
+  description?: string;
+  bookingLink?: string;
+  pictures?: string[];
+  price?: {
+    amount?: string;
+    currencyCode?: string;
+  };
+  minimumDuration?: string;
+  rating?: number;
+  reviewCount?: number;
+  flags?: string[];
+  source?: "amadeus" | "viator";
+};
+
+export type ViatorActivity = {
+  productCode?: string;
+  title?: string;
+  description?: string;
+  images?: Array<{
+    imageSource?: string;
+    caption?: string;
+    isCover?: boolean;
+    variants?: Array<{
+      height?: number;
+      width?: number;
+      url?: string;
+    }>;
+  }>;
+  reviews?: {
+    sources?: Array<{
+      provider?: string;
+      totalCount?: number;
+      averageRating?: number;
+    }>;
+    totalReviews?: number;
+    combinedAverageRating?: number;
+  };
+  duration?: {
+    fixedDurationInMinutes?: number;
+    variableDurationFromMinutes?: number;
+    variableDurationToMinutes?: number;
+  };
+  confirmationType?: string;
+  itineraryType?: string;
+  pricing?: {
+    summary?: {
+      fromPrice?: number;
+      fromPriceBeforeDiscount?: number;
+    };
+    currency?: string;
+  };
+  productUrl?: string;
+  destinations?: Array<{
+    ref?: string;
+    primary?: boolean;
+  }>;
+  tags?: number[];
+  flags?: string[];
+  translationInfo?: {
+    containsMachineTranslatedText?: boolean;
+    translationSource?: string;
+  };
+};
+
 type CityDetailPayload = {
-  data?: Partial<CityDetail> & { base?: Partial<CityDetail> };
+  data?: {
+    // base fields
+    city?: string;
+    state?: string | null;
+    country?: string;
+    coordinates?: CityDetail["coordinates"];
+    country_details?: CityDetail["country_details"];
+    // section fields
+    summary?: string;
+    weather?: CityDetail["weather"];
+    amadeus_activities?: Activity[];
+    viator_activities?: ViatorActivity[];
+    places?: CityDetail["places"];
+  };
   errors?: CitySectionErrors;
 };
 
@@ -287,16 +356,93 @@ const buildParams = (opts?: { state?: string | null; country?: string | null }) 
   return params;
 };
 
-const normalizeCityDetail = (payload: CityDetailPayload): CityDetail => {
-  const data = payload?.data ?? {};
-  const base = (data as { base?: Partial<CityDetail> }).base ?? data;
+const getViatorImageUrl = (images?: ViatorActivity["images"], preferredWidth = 720): string | undefined => {
+  if (!images || images.length === 0) return undefined;
+  const coverImage = images.find((img) => img.isCover) ?? images[0];
+  if (!coverImage?.variants || coverImage.variants.length === 0) return undefined;
+  const sorted = [...coverImage.variants].sort((a, b) => (b.width ?? 0) - (a.width ?? 0));
+  const preferred = sorted.find((v) => (v.width ?? 0) <= preferredWidth) ?? sorted[sorted.length - 1];
+  return preferred?.url;
+};
+
+const formatMinutes = (minutes: number): string => {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours > 0 && mins > 0) return `${hours}h ${mins}m`;
+  if (hours > 0) return `${hours}h`;
+  return `${mins}m`;
+};
+
+const getViatorDuration = (duration?: ViatorActivity["duration"]): string | undefined => {
+  if (!duration) return undefined;
+
+  if (duration.fixedDurationInMinutes) {
+    return formatMinutes(duration.fixedDurationInMinutes);
+  }
+
+  const from = duration.variableDurationFromMinutes;
+  const to = duration.variableDurationToMinutes;
+
+  if (from && to && from !== to) {
+    const fromHours = from / 60;
+    const toHours = to / 60;
+    if (fromHours === Math.floor(fromHours) && toHours === Math.floor(toHours)) {
+      return `${fromHours}-${toHours}h`;
+    }
+    return `${formatMinutes(from)} - ${formatMinutes(to)}`;
+  }
+
+  if (from) return formatMinutes(from);
+  if (to) return formatMinutes(to);
+
+  return undefined;
+};
+
+const normalizeViatorActivity = (viator: ViatorActivity): Activity => {
+  const pictures: string[] = [];
+  for (const img of viator.images ?? []) {
+    const url = getViatorImageUrl([img], 720);
+    if (url) pictures.push(url);
+  }
 
   return {
-    ...(base as CityDetail),
-    summary: (data as Partial<CityDetail>).summary ?? (base as Partial<CityDetail>).summary,
-    weather: (data as Partial<CityDetail>).weather ?? (base as Partial<CityDetail>).weather,
-    activities: (data as Partial<CityDetail>).activities ?? (base as Partial<CityDetail>).activities,
-    places: (data as Partial<CityDetail>).places ?? (base as Partial<CityDetail>).places,
+    id: viator.productCode,
+    name: viator.title,
+    shortDescription: viator.description,
+    description: viator.description,
+    bookingLink: viator.productUrl,
+    pictures,
+    price: viator.pricing?.summary?.fromPrice != null
+      ? {
+          amount: viator.pricing.summary.fromPrice.toFixed(2),
+          currencyCode: viator.pricing.currency ?? "USD",
+        }
+      : undefined,
+    minimumDuration: getViatorDuration(viator.duration),
+    rating: viator.reviews?.combinedAverageRating,
+    reviewCount: viator.reviews?.totalReviews,
+    flags: viator.flags,
+    source: "viator",
+  };
+};
+
+const normalizeCityDetail = (payload: CityDetailPayload): CityDetail => {
+  const data = payload?.data ?? {};
+
+  const viatorActivities = (data.viator_activities ?? []).map(normalizeViatorActivity);
+  const amadeusActivities = (data.amadeus_activities ?? []).map((a) => ({ ...a, source: "amadeus" as const }));
+  const activities = [...viatorActivities, ...amadeusActivities];
+
+  return {
+    city: data.city,
+    state: data.state,
+    country: data.country,
+    coordinates: data.coordinates,
+    country_details: data.country_details,
+    summary: data.summary,
+    weather: data.weather,
+    activities: activities.length > 0 ? activities : undefined,
+    places: data.places,
     errors: payload?.errors,
   };
 };
@@ -349,7 +495,7 @@ export async function fetchCityActivities(
   city: string,
   opts?: FetchCitySectionOptions,
 ): Promise<Pick<CityDetail, "activities" | "errors">> {
-  const detail = await fetchCityDetail(city, { ...opts, includes: ["activities"] });
+  const detail = await fetchCityDetail(city, { ...opts, includes: ["viator_activities"] });
   return { activities: detail.activities, errors: detail.errors };
 }
 
