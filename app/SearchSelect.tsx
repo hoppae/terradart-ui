@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown, Loader2 } from "lucide-react";
 
 export type OptionItem = {
@@ -63,9 +63,25 @@ export default function SearchSelect({
   const hasSpinner = Boolean(loading);
   const paddingClass = "pr-12";
   const hasActiveOption = options.some((option) => option.active);
+
+  const resolvedHighlightedKey =
+    highlightedKey != null && options.some((option) => option.key === highlightedKey)
+      ? highlightedKey
+      : null;
+
+  const highlightedOption = (() => {
+    const match = options.find((option) => option.key === resolvedHighlightedKey);
+    if (match) return match;
+    const active = options.find((option) => option.active);
+    if (active) return active;
+    return options[0];
+  })();
+
   const moveHighlight = (direction: 1 | -1) => {
     if (!options.length) return;
-    const currentIndex = options.findIndex((option) => option.key === (highlightedKey ?? highlightedOption?.key));
+    const currentIndex = options.findIndex(
+      (option) => option.key === (resolvedHighlightedKey ?? highlightedOption?.key),
+    );
     const fallbackIndex = direction === 1 ? 0 : options.length - 1;
     const nextIndex =
       currentIndex === -1
@@ -73,13 +89,6 @@ export default function SearchSelect({
         : (currentIndex + direction + options.length) % options.length;
     setHighlightedKey(options[nextIndex]?.key ?? null);
   };
-  const highlightedOption = useMemo(() => {
-    const match = options.find((option) => option.key === highlightedKey);
-    if (match) return match;
-    const active = options.find((option) => option.active);
-    if (active) return active;
-    return options[0];
-  }, [highlightedKey, options]);
   const computedInputClass =
     inputClassName ??
     `w-full rounded-xl border bg-card px-4 py-3 ${paddingClass} text-base text-foreground placeholder:text-muted-foreground shadow-sm outline-none transition ${
@@ -95,23 +104,7 @@ export default function SearchSelect({
   const computedScrollContainerClass = `${baseScrollContainerClass} ${scrollContainerClassName ?? ""}`.trim();
 
   useEffect(() => {
-    if (!isOpen) {
-      setHighlightedKey(null);
-      return undefined;
-    }
-
-    if (options.length) {
-      const stillVisible = options.find((option) => option.key === highlightedKey);
-      if (stillVisible) {
-        // keep current highlight if still present
-        setHighlightedKey(stillVisible.key);
-      } else {
-        const active = options.find((option) => option.active);
-        setHighlightedKey(active?.key ?? options[0]?.key ?? null);
-      }
-    } else {
-      setHighlightedKey(null);
-    }
+    if (!isOpen) return undefined;
 
     const updateMenuSizing = () => {
       const container = menuRef?.current;
@@ -140,7 +133,7 @@ export default function SearchSelect({
       window.removeEventListener("resize", updateMenuSizing);
       window.removeEventListener("scroll", updateMenuSizing, true);
     };
-  }, [isOpen, menuRef, options, highlightedKey]);
+  }, [isOpen, menuRef]);
 
   return (
     <div data-field-container="search-select">
@@ -238,8 +231,9 @@ export default function SearchSelect({
               ) : (
                 options.map((option, index) => {
                   const isHighlighted =
-                    option.key === highlightedKey ||
-                    (!highlightedKey && (option.active || (!hasActiveOption && index === 0)));
+                    option.key === resolvedHighlightedKey ||
+                    (!resolvedHighlightedKey &&
+                      (option.active || (!hasActiveOption && index === 0)));
                   return (
                   <button
                     key={option.key}
