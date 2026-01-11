@@ -507,6 +507,30 @@ export async function fetchCityPlaces(
   return { places: detail.places, errors: detail.errors };
 }
 
+export type CityInitialData = Pick<CityDetail, "city" | "state" | "country" | "country_details" | "coordinates" | "errors">;
+
+export async function fetchCityInitial(
+  city: string,
+  opts?: FetchCitySectionOptions,
+): Promise<CityInitialData | null> {
+  try {
+    const detail = await fetchCityDetail(city, { ...opts, includes: ["base"] });
+    return {
+      city: detail.city,
+      state: detail.state,
+      country: detail.country,
+      country_details: detail.country_details,
+      coordinates: detail.coordinates,
+      errors: detail.errors,
+    };
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("404")) {
+      return null;
+    }
+    throw error;
+  }
+}
+
 type SectionHandler<T> = {
   onSuccess?: (result: T) => void;
   onError?: (message: string) => void;

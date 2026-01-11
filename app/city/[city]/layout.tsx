@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import type React from "react";
+import { SITE_DESCRIPTION, SITE_NAME, getSiteUrl } from "@/lib/seo/site";
+import { toTitleCase } from "@/lib/utils";
 
 type CityRouteParams = { city?: string };
 type MetadataProps = {
@@ -9,27 +11,35 @@ type CityLayoutProps = {
   children: React.ReactNode;
 };
 
-const toTitleCase = (value?: string) => {
-  if (!value) return undefined;
-  const cleaned = decodeURIComponent(value).replace(/[-_]+/g, " ").trim();
-  return cleaned
-    .split(" ")
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ") || cleaned;
-};
-
 export async function generateMetadata({ params }: MetadataProps): Promise<Metadata> {
   const { city } = await params;
 
-  const formattedCity = toTitleCase(city);
+  const formattedCity = city ? toTitleCase(city) : undefined;
 
-  const title = "Discover " + formattedCity;
-  const description = `Discover ${formattedCity}. Whether you're planning your next trip, or just exploring the world.`;
+  const title = formattedCity ? `Discover ${formattedCity}` : "Discover cities";
+  const description = formattedCity
+    ? `Explore ${formattedCity}. Get local activities, weather, places to visit, and a quick overview to plan your trip.`
+    : SITE_DESCRIPTION;
+
+  const canonicalPath = city ? `/city/${encodeURIComponent(city)}` : "/";
 
   return {
     title,
     description,
+    metadataBase: getSiteUrl(),
+    alternates: { canonical: canonicalPath },
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      url: canonicalPath,
+      siteName: SITE_NAME,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
   };
 }
 
